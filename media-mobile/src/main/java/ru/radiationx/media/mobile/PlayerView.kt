@@ -13,6 +13,7 @@ import ru.radiationx.media.mobile.controllers.MediaButtonsController
 import ru.radiationx.media.mobile.controllers.OutputController
 import ru.radiationx.media.mobile.controllers.TimelineController
 import ru.radiationx.media.mobile.controllers.UiVisbilityController
+import ru.radiationx.media.mobile.controllers.gesture.GestureController
 import ru.radiationx.media.mobile.databinding.ViewPlayerBinding
 
 class PlayerView @JvmOverloads constructor(
@@ -48,6 +49,12 @@ class PlayerView @JvmOverloads constructor(
         mediaTime = binding.mediaTime
     )
 
+    private val gestureController = GestureController(
+        holder = holder,
+        gestureView = binding.mediaControlsContainer,
+        seekerTime = binding.mediaSeekerTime
+    )
+
     init {
         holder.flow.playerState.onEach {
             Log.d("kekeke", "player state $it")
@@ -57,11 +64,24 @@ class PlayerView @JvmOverloads constructor(
             binding.mediaControls.isVisible = it.controlsVisible
             binding.mediaFooter.isVisible = it.controlsVisible
             binding.mediaLoading.isVisible = it.loadingVisible
+            binding.mediaSeekerTime.isVisible = it.liveSeekVisible
         }.launchIn(holder.coroutineScope)
 
         mediaButtonsController.onAnyTap = {
             uiVisbilityController.showControls()
         }
+
+        gestureController.singleTapListener = {
+            uiVisbilityController.onSingleTap()
+        }
+
+        gestureController.doubleTapSeekerState.onEach {
+            uiVisbilityController.updateDoubleTapSeeker(it.isActive)
+        }.launchIn(holder.coroutineScope)
+
+        gestureController.scrollSeekerState.onEach {
+            uiVisbilityController.updateScrollSeeker(it.isActive)
+        }.launchIn(holder.coroutineScope)
 
         timelineController.seekState.onEach {
             if (it != null) {
@@ -71,9 +91,6 @@ class PlayerView @JvmOverloads constructor(
             }
         }.launchIn(holder.coroutineScope)
 
-        binding.mediaControlsContainer.setOnClickListener {
-            uiVisbilityController.onSingleTap()
-        }
     }
 
     fun setPlayer(player: Player?) {

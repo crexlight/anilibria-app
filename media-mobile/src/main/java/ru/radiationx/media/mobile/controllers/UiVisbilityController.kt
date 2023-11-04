@@ -4,6 +4,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -22,6 +23,9 @@ class UiVisbilityController(
     private var tapJob: Job? = null
     private var liveSeekJob: Job? = null
 
+    private val _doubleTapSeekerState = MutableStateFlow(false)
+    private val _scrollSeekerState = MutableStateFlow(false)
+
     private val _state = MutableStateFlow(UiVisibilityState())
     val state = _state.asStateFlow()
 
@@ -29,13 +33,20 @@ class UiVisbilityController(
         holder.flow.playerState.onEach { playerState ->
             _state.update { it.copy(loadingVisible = playerState.isBlockingLoading) }
         }.launchIn(holder.coroutineScope)
+
+        combine(
+            _doubleTapSeekerState,
+            _scrollSeekerState
+        ) { doubleTap, scroll ->
+            _state.update { it.copy(liveSeekVisible = doubleTap || scroll) }
+        }.launchIn(holder.coroutineScope)
     }
 
     fun showControls() {
         startDelayedHideControls()
     }
 
-    fun showControlsLocked(){
+    fun showControlsLocked() {
         tapJob?.cancel()
         _state.update { it.copy(controlsVisible = true) }
     }
@@ -49,12 +60,12 @@ class UiVisbilityController(
         startDelayedHideControls()
     }
 
-    fun onSwipe() {
-        onLiveSeek()
+    fun updateDoubleTapSeeker(active: Boolean) {
+        _doubleTapSeekerState.value = active
     }
 
-    fun onDoubleTap() {
-        onLiveSeek()
+    fun updateScrollSeeker(active: Boolean) {
+        _scrollSeekerState.value = active
     }
 
     private fun startDelayedHideControls() {
@@ -65,15 +76,6 @@ class UiVisbilityController(
             if (holder.flow.playerState.value.isPlaying) {
                 _state.update { it.copy(controlsVisible = false) }
             }
-        }
-    }
-
-    private fun onLiveSeek() {
-        liveSeekJob?.cancel()
-        _state.update { it.copy(liveSeekVisible = true) }
-        tapJob = holder.coroutineScope.launch {
-            delay(LIVE_SEEK_HIDE_DELAY)
-            _state.update { it.copy(liveSeekVisible = false) }
         }
     }
 }

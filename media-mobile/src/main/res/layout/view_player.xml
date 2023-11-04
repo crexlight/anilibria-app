@@ -50,6 +50,14 @@
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/mediaSeekerTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="?colorSurface"
+            android:padding="32dp" />
+
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/mediaFooter"
             android:layout_width="match_parent"
