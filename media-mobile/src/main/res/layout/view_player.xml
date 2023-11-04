@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:background="#000"
+    tools:parentTag="FrameLayout"
+    tools:theme="@style/Theme.MaterialComponents">
+
+    <ru.radiationx.media.mobile.AspectRatioFrameLayout
+        android:id="@+id/mediaAspectRatio"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <TextureView
+            android:id="@+id/mediaTextureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </ru.radiationx.media.mobile.AspectRatioFrameLayout>
+
+    <FrameLayout
+        android:id="@+id/mediaControlsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/mediaControls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/mediaButtonPrev"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/mediaButtonPlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/mediaButtonNext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/mediaFooter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/mediaSeekActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/mediaTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="10:10:10 / 10:10:10" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.AppCompatSeekBar
+                android:id="@+id/mediaSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/mediaBufferingSlider"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:enabled="false"
+                    app:thumbColor="#0000"
+                    app:thumbRadius="0dp"
+                    app:trackColorActive="#0f0"
+                    app:trackColorInactive="#00f" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/mediaSlider"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    app:thumbRadius="8dp"
+                    app:trackColorInactive="#0000" />
+            </FrameLayout>
+
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+    </FrameLayout>
+</merge>

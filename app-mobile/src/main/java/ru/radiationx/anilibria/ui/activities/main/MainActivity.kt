@@ -46,6 +46,7 @@ import ru.radiationx.anilibria.utils.messages.SystemMessenger
 import ru.radiationx.data.analytics.AnalyticsConstants
 import ru.radiationx.data.analytics.features.ActivityLaunchAnalytics
 import ru.radiationx.data.entity.common.AuthState
+import ru.radiationx.media.mobile.TestVideoPlayerActivity
 import ru.radiationx.quill.get
 import ru.radiationx.quill.inject
 import ru.radiationx.quill.viewModel
@@ -111,6 +112,11 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
         if (isLaunchedFromHistory()) {
             get<ActivityLaunchAnalytics>().launchFromHistory(this, savedInstanceState)
         }
+        if (true) {
+            startActivity(Intent(this, TestVideoPlayerActivity::class.java))
+            finish()
+            return
+        }
         createdWithSavedState = savedInstanceState != null
 
         viewModel.init(savedInstanceState?.getString(SELECTED_TAB))
@@ -164,7 +170,10 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
 
     override fun onDestroy() {
         super.onDestroy()
-        binding.tabsRecycler.adapter = null
+        if(false){
+            binding.tabsRecycler.adapter = null
+
+        }
     }
 
 
