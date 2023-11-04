@@ -3,7 +3,6 @@ package ru.radiationx.media.mobile.controllers
 import android.widget.Button
 import androidx.core.view.isInvisible
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import ru.radiationx.media.mobile.RootPlayerHolder
 
@@ -32,8 +31,9 @@ class MediaButtonsController(
         mediaButtonNext.setOnClickListener {
             onAnyTap?.invoke()
         }
-        holder.flow.playerState.map { it.isPlaying }.onEach {
-            mediaButtonPlay.text = if (it) "pause" else "play"
+        holder.flow.playerState.onEach {
+            mediaButtonPlay.text = if (it.isPlaying) "pause" else "play"
+            mediaButtonPlay.isInvisible = it.isBlockingLoading
         }.launchIn(holder.coroutineScope)
     }
 

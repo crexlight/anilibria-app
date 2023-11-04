@@ -91,7 +91,9 @@ data class PlayerState(
     val isLoading: Boolean = false,
     val playbackState: PlaybackState = PlaybackState.IDLE,
     val videoSize: VideoSize = VideoSize.UNKNOWN,
-)
+) {
+    val isBlockingLoading = !isPlaying && isLoading && playbackState == PlaybackState.BUFFERING
+}
 
 data class TimelineState(
     val duration: Long = 0,

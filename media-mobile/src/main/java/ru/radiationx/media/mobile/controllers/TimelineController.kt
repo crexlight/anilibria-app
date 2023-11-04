@@ -60,7 +60,10 @@ class TimelineController(
         val timelineState = holder.flow.timelineState
 
         timelineState.map { it.duration }.distinctUntilChanged().onEach {
-            slider.valueTo = it.toFloat()
+            val newValue = it.toFloat()
+            if (newValue > slider.valueFrom) {
+                slider.valueTo = newValue
+            }
         }.launchIn(holder.coroutineScope)
 
         timelineState.map { it.bufferPercent }.distinctUntilChanged().onEach {

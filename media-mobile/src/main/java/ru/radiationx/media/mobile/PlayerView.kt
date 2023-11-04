@@ -56,6 +56,7 @@ class PlayerView @JvmOverloads constructor(
         uiVisbilityController.state.onEach {
             binding.mediaControls.isVisible = it.controlsVisible
             binding.mediaFooter.isVisible = it.controlsVisible
+            binding.mediaLoading.isVisible = it.loadingVisible
         }.launchIn(holder.coroutineScope)
 
         mediaButtonsController.onAnyTap = {
@@ -63,13 +64,16 @@ class PlayerView @JvmOverloads constructor(
         }
 
         timelineController.seekState.onEach {
-
+            if (it != null) {
+                uiVisbilityController.showControlsLocked()
+            } else {
+                uiVisbilityController.showControls()
+            }
         }.launchIn(holder.coroutineScope)
 
         binding.mediaControlsContainer.setOnClickListener {
             uiVisbilityController.onSingleTap()
         }
-
     }
 
     fun setPlayer(player: Player?) {
