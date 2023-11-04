@@ -66,13 +66,13 @@ class TimelineController(
             }
         }.launchIn(holder.coroutineScope)
 
-        timelineState.map { it.bufferPercent }.distinctUntilChanged().onEach {
-            bufferingSlider.value = it.toFloat()
+        timelineState.onEach {
+            bufferingSlider.value = it.bufferPercent.coerceIn(0, 100).toFloat()
         }.launchIn(holder.coroutineScope)
 
         combine(timelineState, seekState) { timeline, seek ->
             if (seek == null) {
-                slider.value = timeline.position.toFloat()
+                slider.value = timeline.position.coerceIn(0, timeline.duration).toFloat()
             }
             mediaTime.text = timeline.formatTime(seek)
         }.launchIn(holder.coroutineScope)
