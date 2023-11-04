@@ -6,6 +6,9 @@ import android.util.Log
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.media3.common.Player
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionManager
+import androidx.transition.TransitionSet
 import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -57,22 +60,29 @@ class PlayerView @JvmOverloads constructor(
 
     init {
         holder.flow.playerState.onEach {
-            Log.d("kekeke", "player state $it")
+            //Log.d("kekeke", "player state $it")
         }.launchIn(holder.coroutineScope)
 
         uiVisbilityController.state.onEach {
+            Log.d("kekeke", "$it")
+            TransitionManager.beginDelayedTransition(binding.mediaControlsContainer,AutoTransition().apply {
+                ordering = TransitionSet.ORDERING_TOGETHER
+                duration = 200L
+            })
+
             binding.mediaControls.isVisible = it.controlsVisible
-            binding.mediaFooter.isVisible = it.controlsVisible
+            binding.mediaFooter.isVisible = it.mainVisible
             binding.mediaLoading.isVisible = it.loadingVisible
-            binding.mediaSeekerTime.isVisible = it.liveSeekVisible
+            binding.mediaSeekerTime.isVisible = it.seekerVisible
+            binding.mediaScrim.isVisible = it.mainVisible
         }.launchIn(holder.coroutineScope)
 
         mediaButtonsController.onAnyTap = {
-            uiVisbilityController.showControls()
+            uiVisbilityController.showMain()
         }
 
         gestureController.singleTapListener = {
-            uiVisbilityController.onSingleTap()
+            uiVisbilityController.toggleMainVisible()
         }
 
         gestureController.doubleTapSeekerState.onEach {
@@ -84,11 +94,7 @@ class PlayerView @JvmOverloads constructor(
         }.launchIn(holder.coroutineScope)
 
         timelineController.seekState.onEach {
-            if (it != null) {
-                uiVisbilityController.showControlsLocked()
-            } else {
-                uiVisbilityController.showControls()
-            }
+            uiVisbilityController.updateSlider(it != null)
         }.launchIn(holder.coroutineScope)
 
     }

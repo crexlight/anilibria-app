@@ -25,6 +25,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <View
+            android:id="@+id/mediaScrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#3000" />
+
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/mediaControls"
             android:layout_width="match_parent"
