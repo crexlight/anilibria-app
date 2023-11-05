@@ -2,6 +2,7 @@ package ru.radiationx.media.mobile
 
 import android.net.Uri
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import kotlinx.coroutines.CoroutineScope
@@ -25,6 +26,15 @@ class PlayerFlow(
 ) : PlayerAttachListener {
 
     private val playerListener = object : Player.Listener {
+
+        override fun onPlayerErrorChanged(error: PlaybackException?) {
+            super.onPlayerErrorChanged(error)
+            val errorMessage = error?.let {
+                "${it.errorCode}, ${it.errorCodeName}"
+            }
+            _playerState.update { it.copy(errorMessage = errorMessage) }
+        }
+
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
             _playerState.update { it.copy(isPlaying = isPlaying) }
@@ -158,6 +168,9 @@ class PlayerFlow(
 
     private fun withPlayer(block: (Player) -> Unit) {
         val player = _player ?: return
+        if (player.playerError != null) {
+            player.prepare()
+        }
         block.invoke(player)
     }
 

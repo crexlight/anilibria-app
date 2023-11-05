@@ -56,6 +56,40 @@
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/mediaErrorContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="16dp"
+            android:background="?colorSurface"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Произошла ошибка"
+                android:textSize="16sp" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/mediaErrorMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="12sp"
+                tools:text="2000:ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED" />
+
+            <Button
+                android:id="@+id/mediaErrorAction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Обновить" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/mediaSeekerTime"
             android:layout_width="wrap_content"
@@ -153,8 +187,8 @@
                 </FrameLayout>
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-
         </androidx.appcompat.widget.LinearLayoutCompat>
+
 
     </FrameLayout>
 

@@ -5,17 +5,14 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
 import android.widget.FrameLayout
-import androidx.core.view.isVisible
 import androidx.media3.common.Player
-import androidx.transition.AutoTransition
-import androidx.transition.TransitionManager
-import androidx.transition.TransitionSet
 import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import ru.radiationx.media.mobile.controllers.ErrorController
 import ru.radiationx.media.mobile.controllers.MediaButtonsController
 import ru.radiationx.media.mobile.controllers.OutputController
 import ru.radiationx.media.mobile.controllers.SkipsController
@@ -45,7 +42,8 @@ class PlayerView @JvmOverloads constructor(
 
     private val uiVisbilityController = UiVisbilityController(
         coroutineScope = coroutineScope,
-        playerFlow = playerFlow
+        playerFlow = playerFlow,
+        binding = binding
     )
 
     private val mediaButtonsController = MediaButtonsController(
@@ -77,6 +75,12 @@ class PlayerView @JvmOverloads constructor(
         skipButtonCancel = binding.mediaSkipButtonCancel,
         skipButtonSkip = binding.mediaSkipButtonSkip
     )
+    private val errorController = ErrorController(
+        coroutineScope = coroutineScope,
+        playerFlow = playerFlow,
+        errorMessageText = binding.mediaErrorMessage,
+        errorButtonAction = binding.mediaErrorAction
+    )
 
     init {
         holder.addListener(playerFlow)
@@ -86,23 +90,7 @@ class PlayerView @JvmOverloads constructor(
         holder.addListener(timelineController)
         holder.addListener(gestureController)
         holder.addListener(skipsController)
-
-        uiVisbilityController.state.onEach {
-            TransitionManager.beginDelayedTransition(
-                binding.mediaOverlay,
-                AutoTransition().apply {
-                    ordering = TransitionSet.ORDERING_TOGETHER
-                    duration = 200L
-                }
-            )
-
-            binding.mediaButtonsContainer.isVisible = it.controlsVisible
-            binding.mediaFooter.isVisible = it.mainVisible
-            binding.mediaLoading.isVisible = it.loadingVisible
-            binding.mediaSeekerTime.isVisible = it.seekerVisible
-            binding.mediaScrim.isVisible = it.mainVisible
-            binding.mediaSkipContainer.isVisible = it.skipVisible
-        }.launchIn(coroutineScope)
+        holder.addListener(errorController)
 
         mediaButtonsController.onAnyTap = {
             uiVisbilityController.showMain()
@@ -129,11 +117,15 @@ class PlayerView @JvmOverloads constructor(
         }.launchIn(coroutineScope)
 
         playerFlow.preparedFlow.onEach {
-            Log.e("kekeke", "preparedFlow $it")
+            Log.d("kekeke", "preparedFlow $it")
         }.launchIn(coroutineScope)
 
         playerFlow.completedFlow.onEach {
-            Log.e("kekeke", "completedFlow $it")
+            Log.d("kekeke", "completedFlow $it")
+        }.launchIn(coroutineScope)
+
+        playerFlow.playerState.onEach {
+            Log.d("kekeke", "playerState $it")
         }.launchIn(coroutineScope)
     }
 
