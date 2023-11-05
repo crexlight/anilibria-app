@@ -21,7 +21,7 @@
     </ru.radiationx.media.mobile.AspectRatioFrameLayout>
 
     <FrameLayout
-        android:id="@+id/mediaControlsContainer"
+        android:id="@+id/mediaOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -32,7 +32,7 @@
             android:background="#3000" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/mediaControls"
+            android:id="@+id/mediaButtonsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -106,7 +106,6 @@
                 android:orientation="vertical">
 
                 <androidx.appcompat.widget.LinearLayoutCompat
-                    android:id="@+id/mediaSeekActions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 

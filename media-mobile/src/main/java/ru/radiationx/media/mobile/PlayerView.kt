@@ -55,7 +55,7 @@ class PlayerView @JvmOverloads constructor(
 
     private val gestureController = GestureController(
         holder = holder,
-        gestureView = binding.mediaControlsContainer,
+        gestureView = binding.mediaOverlay,
         seekerTime = binding.mediaSeekerTime
     )
 
@@ -73,14 +73,14 @@ class PlayerView @JvmOverloads constructor(
         uiVisbilityController.state.onEach {
             Log.d("kekeke", "$it")
             TransitionManager.beginDelayedTransition(
-                binding.mediaControlsContainer,
+                binding.mediaOverlay,
                 AutoTransition().apply {
                     ordering = TransitionSet.ORDERING_TOGETHER
                     duration = 200L
                 }
             )
 
-            binding.mediaControls.isVisible = it.controlsVisible
+            binding.mediaButtonsContainer.isVisible = it.controlsVisible
             binding.mediaFooter.isVisible = it.mainVisible
             binding.mediaLoading.isVisible = it.loadingVisible
             binding.mediaSeekerTime.isVisible = it.seekerVisible
