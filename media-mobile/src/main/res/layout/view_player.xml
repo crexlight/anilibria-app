@@ -65,59 +65,95 @@
             android:padding="32dp" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/mediaFooter"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:orientation="vertical">
 
             <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/mediaSeekActions"
+                android:id="@+id/mediaSkipContainer"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:gravity="end">
 
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/mediaTime"
-                    android:layout_width="0dp"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/mediaSkipButtonSkip"
+                    style="?materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    tools:text="10:10:10 / 10:10:10" />
+                    android:layout_marginEnd="16dp"
+                    android:text="Пропустить"
+                    android:textAllCaps="false"
+                    android:textColor="?colorOnSurface"
+                    app:strokeColor="?colorOnSurface" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/mediaSkipButtonCancel"
+                    style="?materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:text="Смотреть"
+                    android:textAllCaps="false"
+                    android:textColor="?colorOnSurface"
+                    app:strokeColor="?colorOnSurface" />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-            <FrameLayout
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/mediaFooter"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/mediaBufferingSlider"
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/mediaSeekActions"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:enabled="false"
-                    app:thumbColor="#0000"
-                    app:thumbElevation="0dp"
-                    app:thumbRadius="0dp"
-                    app:trackColorActive="#0f0"
-                    app:trackColorInactive="#00f" />
+                    android:layout_height="wrap_content">
 
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/mediaSlider"
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/mediaTime"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        tools:text="10:10:10 / 10:10:10" />
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    app:thumbRadius="8dp"
-                    app:trackColorInactive="#0000" />
-            </FrameLayout>
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/mediaBufferingSlider"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:enabled="false"
+                        app:thumbColor="#0000"
+                        app:thumbElevation="0dp"
+                        app:thumbRadius="0dp"
+                        app:trackColorActive="#0f0"
+                        app:trackColorInactive="#00f" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/mediaSlider"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        app:thumbRadius="8dp"
+                        app:trackColorInactive="#0000" />
+                </FrameLayout>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

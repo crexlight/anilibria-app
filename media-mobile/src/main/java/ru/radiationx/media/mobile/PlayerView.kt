@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import ru.radiationx.media.mobile.controllers.MediaButtonsController
 import ru.radiationx.media.mobile.controllers.OutputController
+import ru.radiationx.media.mobile.controllers.SkipsController
 import ru.radiationx.media.mobile.controllers.TimelineController
 import ru.radiationx.media.mobile.controllers.UiVisbilityController
 import ru.radiationx.media.mobile.controllers.gesture.GestureController
@@ -58,6 +59,12 @@ class PlayerView @JvmOverloads constructor(
         seekerTime = binding.mediaSeekerTime
     )
 
+    private val skipsController = SkipsController(
+        holder = holder,
+        skipButtonCancel = binding.mediaSkipButtonCancel,
+        skipButtonSkip = binding.mediaSkipButtonSkip
+    )
+
     init {
         holder.flow.playerState.onEach {
             //Log.d("kekeke", "player state $it")
@@ -65,16 +72,20 @@ class PlayerView @JvmOverloads constructor(
 
         uiVisbilityController.state.onEach {
             Log.d("kekeke", "$it")
-            TransitionManager.beginDelayedTransition(binding.mediaControlsContainer,AutoTransition().apply {
-                ordering = TransitionSet.ORDERING_TOGETHER
-                duration = 200L
-            })
+            TransitionManager.beginDelayedTransition(
+                binding.mediaControlsContainer,
+                AutoTransition().apply {
+                    ordering = TransitionSet.ORDERING_TOGETHER
+                    duration = 200L
+                }
+            )
 
             binding.mediaControls.isVisible = it.controlsVisible
             binding.mediaFooter.isVisible = it.mainVisible
             binding.mediaLoading.isVisible = it.loadingVisible
             binding.mediaSeekerTime.isVisible = it.seekerVisible
             binding.mediaScrim.isVisible = it.mainVisible
+            binding.mediaSkipContainer.isVisible = it.skipVisible
         }.launchIn(holder.coroutineScope)
 
         mediaButtonsController.onAnyTap = {
@@ -96,6 +107,14 @@ class PlayerView @JvmOverloads constructor(
         timelineController.seekState.onEach {
             uiVisbilityController.updateSlider(it != null)
         }.launchIn(holder.coroutineScope)
+
+        skipsController.currentSkip.onEach {
+            uiVisbilityController.updateSkip(it != null)
+        }.launchIn(holder.coroutineScope)
+
+        /*skipsController.setSkips(listOf(
+            SkipsController.Skip(10000, 100000)
+        ))*/
 
     }
 

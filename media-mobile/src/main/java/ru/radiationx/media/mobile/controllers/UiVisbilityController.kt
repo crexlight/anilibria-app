@@ -38,7 +38,8 @@ class UiVisbilityController(
                 mainVisible = mainVisible,
                 controlsVisible = !seekerVisible && mainVisible,
                 seekerVisible = seekerVisible,
-                loadingVisible = playerState.isBlockingLoading
+                loadingVisible = playerState.isBlockingLoading,
+                skipVisible = internalState.skip
             )
         }.launchIn(holder.coroutineScope)
     }
@@ -68,6 +69,10 @@ class UiVisbilityController(
         _internalState.update { it.copy(slider = active) }
     }
 
+    fun updateSkip(active: Boolean) {
+        _internalState.update { it.copy(skip = active) }
+    }
+
     private fun startDelayedHideControls() {
         tapJob?.cancel()
         setMainState(true)
@@ -89,6 +94,7 @@ class UiVisbilityController(
         val doubleTapSeeker: Boolean = false,
         val scrollSeeker: Boolean = false,
         val slider: Boolean = false,
+        val skip: Boolean = false,
     )
 }
 
@@ -97,6 +103,7 @@ data class UiVisibilityState(
     val controlsVisible: Boolean = false,
     val seekerVisible: Boolean = false,
     val loadingVisible: Boolean = false,
+    val skipVisible: Boolean = false,
 ) {
     val anyVisible = controlsVisible && seekerVisible
 }
