@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.radiationx.media.mobile.PlayerFlow
 import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.models.PlaybackState
 
 internal class UiVisbilityController(
     private val coroutineScope: CoroutineScope,
@@ -78,7 +79,9 @@ internal class UiVisbilityController(
         tapJob?.cancel()
         setMainState(true)
         tapJob = coroutineScope.launch {
-            val needsHide = playerFlow.playerState.value.isPlaying
+            val needsHide = playerFlow.playerState.value.let {
+                it.playWhenReady && it.playbackState != PlaybackState.ENDED
+            }
             delay(CONTROLS_HIDE_DELAY)
             if (needsHide) {
                 setMainState(false)

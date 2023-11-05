@@ -30,6 +30,11 @@ class PlayerFlow(
             _playerState.update { it.copy(isPlaying = isPlaying) }
         }
 
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            super.onPlayWhenReadyChanged(playWhenReady, reason)
+            _playerState.update { it.copy(playWhenReady = playWhenReady) }
+        }
+
         override fun onIsLoadingChanged(isLoading: Boolean) {
             super.onIsLoadingChanged(isLoading)
             _playerState.update { it.copy(isLoading = isLoading) }
@@ -92,6 +97,7 @@ class PlayerFlow(
         _player = player
         _playerState.update {
             PlayerState(
+                playWhenReady = player.playWhenReady,
                 isPlaying = player.isPlaying,
                 isLoading = player.isLoading,
                 playbackState = player.playbackState.asPlaybackState(),

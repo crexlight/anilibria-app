@@ -34,7 +34,7 @@ internal class MediaButtonsController(
             onAnyTap?.invoke()
         }
         playerFlow.playerState.onEach {
-            mediaButtonPlay.text = if (it.isPlaying) "pause" else "play"
+            mediaButtonPlay.text = if (it.playWhenReady && it.isPlaying) "pause" else "play"
             mediaButtonPlay.isInvisible = it.isBlockingLoading
         }.launchIn(coroutineScope)
     }
