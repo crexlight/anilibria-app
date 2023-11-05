@@ -14,7 +14,7 @@ internal class GestureListener : GestureDetector.SimpleOnGestureListener() {
 
     var singleTapListener: (() -> Unit)? = null
     var doubleTapListener: ((event: MotionEvent) -> Unit)? = null
-    var scrollListener: ((deltaX: Float) -> Unit)? = null
+    var scrollListener: ((deltaX: Float, eventId: Long) -> Unit)? = null
 
     override fun onSingleTapUp(e: MotionEvent): Boolean {
         val delta = e.downTime - lastDoubleTapTime
@@ -58,7 +58,7 @@ internal class GestureListener : GestureDetector.SimpleOnGestureListener() {
             return false
         }
         val deltaX = e2.x - e1.x
-        scrollListener?.invoke(deltaX)
+        scrollListener?.invoke(deltaX, e1.downTime)
         return super.onScroll(e1, e2, distanceX, distanceY)
     }
 }

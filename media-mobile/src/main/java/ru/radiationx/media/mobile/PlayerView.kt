@@ -37,7 +37,9 @@ class PlayerView @JvmOverloads constructor(
         coroutineScope = coroutineScope,
         playerFlow = playerFlow,
         mediaTextureView = binding.mediaTextureView,
-        mediaAspectRatio = binding.mediaAspectRatio
+        mediaAspectRatio = binding.mediaAspectRatio,
+        scaleContainer = binding.mediaScaleContainer,
+        scaleButton = binding.mediaActionScale
     )
 
     private val uiVisbilityController = UiVisbilityController(
@@ -66,7 +68,8 @@ class PlayerView @JvmOverloads constructor(
         playerFlow = playerFlow,
         coroutineScope = coroutineScope,
         gestureView = binding.mediaOverlay,
-        seekerTime = binding.mediaSeekerTime
+        seekerTime = binding.mediaSeekerTime,
+        mediaAspectRatio = binding.mediaAspectRatio
     )
 
     private val skipsController = SkipsController(
@@ -106,6 +109,11 @@ class PlayerView @JvmOverloads constructor(
 
         gestureController.scrollSeekerState.onEach {
             uiVisbilityController.updateScrollSeeker(it.isActive)
+        }.launchIn(coroutineScope)
+
+        gestureController.liveScale.onEach {
+            outputController.setLiveScale(it)
+            uiVisbilityController.updateLiveScale(it != null)
         }.launchIn(coroutineScope)
 
         timelineController.seekState.onEach {

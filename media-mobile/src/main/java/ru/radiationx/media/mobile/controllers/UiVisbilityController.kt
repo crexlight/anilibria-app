@@ -40,15 +40,18 @@ internal class UiVisbilityController(
             playerFlow.playerState
         ) { internalState, playerState ->
             val hasError = playerState.errorMessage != null
-            val seekerVisible = internalState.scrollSeeker || internalState.doubleTapSeeker
-            val mainVisible = internalState.main || internalState.slider
+            val seekerVisible =
+                (internalState.scrollSeeker || internalState.doubleTapSeeker) && !internalState.liveScale
+            val mainVisible =
+                (internalState.main || internalState.slider) && !internalState.liveScale
             _state.value = UiVisibilityState(
                 mainVisible = mainVisible,
                 controlsVisible = !seekerVisible && mainVisible && !hasError,
                 seekerVisible = seekerVisible,
                 loadingVisible = playerState.isBlockingLoading,
-                skipVisible = internalState.skip,
-                errorVisible = !seekerVisible && hasError
+                skipVisible = internalState.skip && !internalState.liveScale,
+                errorVisible = !seekerVisible && hasError,
+                liveScaleVisible = internalState.liveScale
             )
         }.launchIn(coroutineScope)
 
@@ -68,6 +71,7 @@ internal class UiVisbilityController(
             binding.mediaScrim.isVisible = it.mainVisible
             binding.mediaSkipContainer.isVisible = it.skipVisible
             binding.mediaErrorContainer.isVisible = it.errorVisible
+            binding.mediaScaleStroke.isVisible = it.liveScaleVisible
         }.launchIn(coroutineScope)
     }
 
@@ -100,6 +104,10 @@ internal class UiVisbilityController(
         _internalState.update { it.copy(skip = active) }
     }
 
+    fun updateLiveScale(active: Boolean) {
+        _internalState.update { it.copy(liveScale = active) }
+    }
+
     private fun startDelayedHideControls() {
         tapJob?.cancel()
         setMainState(true)
@@ -124,6 +132,7 @@ internal class UiVisbilityController(
         val scrollSeeker: Boolean = false,
         val slider: Boolean = false,
         val skip: Boolean = false,
+        val liveScale: Boolean = false,
     )
 
     private data class UiVisibilityState(
@@ -133,5 +142,6 @@ internal class UiVisbilityController(
         val loadingVisible: Boolean = false,
         val skipVisible: Boolean = false,
         val errorVisible: Boolean = false,
+        val liveScaleVisible: Boolean = false,
     )
 }

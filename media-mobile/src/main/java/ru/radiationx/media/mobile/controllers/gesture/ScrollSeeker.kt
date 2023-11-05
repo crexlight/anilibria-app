@@ -1,5 +1,6 @@
 package ru.radiationx.media.mobile.controllers.gesture
 
+import android.util.Log
 import android.view.View
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,12 +14,15 @@ internal class ScrollSeeker(
     private val gestureView: View,
 ) {
 
+    private var _ignoreEventId: Long? = null
+
     private val _state = MutableStateFlow(SeekerState())
     val state = _state.asStateFlow()
 
     var applyListener: ((SeekerState) -> Unit)? = null
 
-    fun onScroll(deltaX: Float) {
+    fun onScroll(deltaX: Float, eventId: Long) {
+        if (_ignoreEventId == eventId) return
         val percent = ((deltaX / gestureView.width) * 100).toInt()
         val sign = if (percent < 0) -1 else 1
         val seconds = percent.toDouble().pow(2.0).div(25).times(sign).toLong()
@@ -38,10 +42,22 @@ internal class ScrollSeeker(
         }
     }
 
-    fun onTouchEnd() {
-        if (_state.value.isActive) {
+    fun onTouchEnd(eventId: Long) {
+        if (_ignoreEventId != eventId && _state.value.isActive) {
             applyListener?.invoke(_state.value)
         }
+        _ignoreEventId = null
         _state.value = SeekerState()
+    }
+
+    // needs because conflicting with scale gesture
+    fun setIgnore(eventId: Long?) {
+        if (eventId == _ignoreEventId) {
+            return
+        }
+        _ignoreEventId = eventId
+        if (eventId != null) {
+            _state.value = SeekerState()
+        }
     }
 }

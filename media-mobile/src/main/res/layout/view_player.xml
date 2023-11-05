@@ -8,18 +8,25 @@
     tools:parentTag="FrameLayout"
     tools:theme="@style/Theme.MaterialComponents.DayNight">
 
-    <ru.radiationx.media.mobile.views.AspectRatioFrameLayout
-        android:id="@+id/mediaAspectRatio"
+    <FrameLayout
+        android:id="@+id/mediaScaleContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center">
+        android:layout_height="match_parent">
 
-        <TextureView
-            android:id="@+id/mediaTextureView"
+        <ru.radiationx.media.mobile.views.AspectRatioFrameLayout
+            android:id="@+id/mediaAspectRatio"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:background="#fff" />
-    </ru.radiationx.media.mobile.views.AspectRatioFrameLayout>
+            android:layout_gravity="center">
+
+            <TextureView
+                android:id="@+id/mediaTextureView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:background="#fff" />
+        </ru.radiationx.media.mobile.views.AspectRatioFrameLayout>
+
+    </FrameLayout>
 
     <FrameLayout
         android:id="@+id/mediaOverlay"
@@ -31,6 +38,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="#6000" />
+
+        <View
+            android:id="@+id/mediaScaleStroke"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_media_scale_stroke"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/mediaButtonsContainer"
@@ -153,7 +167,7 @@
                     android:textAllCaps="false"
                     android:textColor="?colorOnSurface"
                     app:backgroundTint="#6000"
-                    app:strokeColor="?colorOnSurface" />
+                    app:strokeColor="#6000" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/mediaSkipButtonCancel"
@@ -165,7 +179,7 @@
                     android:textAllCaps="false"
                     android:textColor="?colorOnSurface"
                     app:backgroundTint="#6000"
-                    app:strokeColor="?colorOnSurface" />
+                    app:strokeColor="#6000" />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -231,6 +245,7 @@
                         app:tint="?colorOnSurface" />
 
                     <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/mediaActionScale"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:background="?actionBarItemBackground"
