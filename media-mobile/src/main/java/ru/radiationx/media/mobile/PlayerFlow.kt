@@ -176,9 +176,9 @@ class PlayerFlow(
 
     private fun updateTimeline(player: Player) {
         _timelineState.value = TimelineState(
-            player.duration.coerceAtLeast(0),
-            player.currentPosition.coerceAtLeast(0),
-            player.bufferedPercentage.coerceAtLeast(0)
+            duration = player.duration.coerceAtLeast(0),
+            position = player.currentPosition.coerceAtLeast(0),
+            bufferPosition = player.bufferedPosition.coerceAtLeast(0)
         )
     }
 }

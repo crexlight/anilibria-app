@@ -59,8 +59,7 @@ class PlayerView @JvmOverloads constructor(
     private val timelineController = TimelineController(
         coroutineScope = coroutineScope,
         playerFlow = playerFlow,
-        slider = binding.mediaSlider,
-        bufferingSlider = binding.mediaBufferingSlider,
+        mediaSeekBar = binding.mediaSeekBar,
         mediaTime = binding.mediaTime
     )
 

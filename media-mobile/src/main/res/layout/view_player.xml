@@ -188,28 +188,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <FrameLayout
+                <androidx.appcompat.widget.AppCompatSeekBar
+                    android:id="@+id/mediaSeekBar"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <com.google.android.material.slider.Slider
-                        android:id="@+id/mediaBufferingSlider"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:enabled="false"
-                        app:thumbColor="#0000"
-                        app:thumbElevation="0dp"
-                        app:thumbRadius="0dp"
-                        app:trackColorActive="@color/color_media_slider_active"
-                        app:trackColorInactive="@color/color_media_slider_inactive" />
-
-                    <com.google.android.material.slider.Slider
-                        android:id="@+id/mediaSlider"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        app:thumbRadius="6dp"
-                        app:trackColorInactive="#0000" />
-                </FrameLayout>
+                    android:layout_height="48dp"
+                    tools:progress="25"
+                    tools:secondaryProgress="50" />
 
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"

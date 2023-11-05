@@ -1,10 +1,9 @@
 package ru.radiationx.media.mobile.controllers
 
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
-import com.google.android.material.slider.LabelFormatter
-import com.google.android.material.slider.Slider
-import com.google.android.material.slider.Slider.OnChangeListener
-import com.google.android.material.slider.Slider.OnSliderTouchListener
+import androidx.appcompat.widget.AppCompatSeekBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,60 +20,49 @@ import ru.radiationx.media.mobile.utils.TimeFormatter
 internal class TimelineController(
     private val coroutineScope: CoroutineScope,
     private val playerFlow: PlayerFlow,
-    private val slider: Slider,
-    private val bufferingSlider: Slider,
+    private val mediaSeekBar: AppCompatSeekBar,
     private val mediaTime: TextView,
 ) : PlayerAttachListener {
 
-    private val _seekState = MutableStateFlow<Long?>(null)
+    private val _seekState = MutableStateFlow<Int?>(null)
     val seekState = _seekState.asStateFlow()
 
     init {
-        slider.valueFrom = 0f
-        slider.valueTo = 1f
-        slider.labelBehavior = LabelFormatter.LABEL_GONE
+        mediaSeekBar.max = 100
 
-        bufferingSlider.valueFrom = 0f
-        bufferingSlider.valueTo = 100f
-        bufferingSlider.labelBehavior = LabelFormatter.LABEL_GONE
-
-        slider.addOnSliderTouchListener(object : OnSliderTouchListener {
-
-            private val changeListener = OnChangeListener { _, value, fromUser ->
-                if (!fromUser) return@OnChangeListener
-                _seekState.value = value.toLong()
+        mediaSeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (!fromUser) return
+                _seekState.value = progress
             }
 
-            override fun onStartTrackingTouch(slider: Slider) {
-                _seekState.value = slider.value.toLong()
-                slider.addOnChangeListener(changeListener)
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+                _seekState.value = seekBar.progress
             }
 
-            override fun onStopTrackingTouch(slider: Slider) {
-                slider.removeOnChangeListener(changeListener)
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
                 _seekState.value = null
-                playerFlow.seekTo(slider.value.toLong())
+                playerFlow.seekTo(seekBar.progress.toLong())
             }
         })
 
         val timelineState = playerFlow.timelineState
 
         timelineState.map { it.duration }.distinctUntilChanged().onEach {
-            val newValue = it.toFloat()
-            if (newValue > slider.valueFrom) {
-                slider.valueTo = newValue
+            if (it > 0L) {
+                mediaSeekBar.max = it.toInt()
             }
         }.launchIn(coroutineScope)
 
         timelineState.onEach {
-            bufferingSlider.value = it.bufferPercent.coerceIn(0, 100).toFloat()
+            mediaSeekBar.secondaryProgress = it.bufferPosition.coerceIn(0, it.duration).toInt()
         }.launchIn(coroutineScope)
 
         combine(timelineState, seekState) { timeline, seek ->
             if (seek == null) {
-                slider.value = timeline.position.coerceIn(0, timeline.duration).toFloat()
+                mediaSeekBar.progress = timeline.position.coerceIn(0, timeline.duration).toInt()
             }
-            mediaTime.text = timeline.formatTime(seek)
+            mediaTime.text = timeline.formatTime(seek?.toLong())
         }.launchIn(coroutineScope)
     }
 
