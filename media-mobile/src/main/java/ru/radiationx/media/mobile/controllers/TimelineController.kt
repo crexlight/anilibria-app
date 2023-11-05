@@ -6,6 +6,7 @@ import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.google.android.material.slider.Slider.OnChangeListener
 import com.google.android.material.slider.Slider.OnSliderTouchListener
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -13,16 +14,20 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import ru.radiationx.media.mobile.RootPlayerHolder
-import ru.radiationx.media.mobile.TimeFormatter
-import ru.radiationx.media.mobile.TimelineState
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.PlayerFlow
+import ru.radiationx.media.mobile.holder.RootPlayerHolder
+import ru.radiationx.media.mobile.utils.TimeFormatter
+import ru.radiationx.media.mobile.models.TimelineState
 
-class TimelineController(
+internal class TimelineController(
     private val holder: RootPlayerHolder,
+    private val coroutineScope: CoroutineScope,
+    private val playerFlow: PlayerFlow,
     private val slider: Slider,
     private val bufferingSlider: Slider,
     private val mediaTime: TextView,
-) {
+) : PlayerAttachListener {
 
     private val _seekState = MutableStateFlow<Long?>(null)
     val seekState = _seekState.asStateFlow()
@@ -57,25 +62,25 @@ class TimelineController(
             }
         })
 
-        val timelineState = holder.flow.timelineState
+        val timelineState = playerFlow.timelineState
 
         timelineState.map { it.duration }.distinctUntilChanged().onEach {
             val newValue = it.toFloat()
             if (newValue > slider.valueFrom) {
                 slider.valueTo = newValue
             }
-        }.launchIn(holder.coroutineScope)
+        }.launchIn(coroutineScope)
 
         timelineState.onEach {
             bufferingSlider.value = it.bufferPercent.coerceIn(0, 100).toFloat()
-        }.launchIn(holder.coroutineScope)
+        }.launchIn(coroutineScope)
 
         combine(timelineState, seekState) { timeline, seek ->
             if (seek == null) {
                 slider.value = timeline.position.coerceIn(0, timeline.duration).toFloat()
             }
             mediaTime.text = timeline.formatTime(seek)
-        }.launchIn(holder.coroutineScope)
+        }.launchIn(coroutineScope)
     }
 
     private fun TimelineState.formatTime(seek: Long?): String {

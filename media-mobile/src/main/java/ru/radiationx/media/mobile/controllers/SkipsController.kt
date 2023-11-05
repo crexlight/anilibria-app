@@ -1,18 +1,23 @@
 package ru.radiationx.media.mobile.controllers
 
 import android.view.View
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
-import ru.radiationx.media.mobile.RootPlayerHolder
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.PlayerFlow
+import ru.radiationx.media.mobile.holder.RootPlayerHolder
 
-class SkipsController(
+internal class SkipsController(
     private val holder: RootPlayerHolder,
+    private val coroutineScope: CoroutineScope,
+    private val playerFlow: PlayerFlow,
     private val skipButtonCancel: View,
     private val skipButtonSkip: View,
-) {
+) : PlayerAttachListener {
 
     private val _skipsData = MutableStateFlow(SkipsData())
 
@@ -32,13 +37,13 @@ class SkipsController(
 
         combine(
             _skipsData,
-            holder.flow.timelineState
+            playerFlow.timelineState
         ) { skipsData, timelineState ->
             val skip = skipsData.skips.find {
                 checkSkip(it, skipsData.skipped, timelineState.position)
             }
             _currentSkip.value = skip
-        }.launchIn(holder.coroutineScope)
+        }.launchIn(coroutineScope)
     }
 
     fun setSkips(skips: List<Skip>) {

@@ -2,14 +2,14 @@ package ru.radiationx.media.mobile.models
 
 import androidx.media3.common.Player
 
-enum class PlaybackState {
+internal enum class PlaybackState {
     IDLE,
     BUFFERING,
     READY,
     ENDED
 }
 
-fun Int.asPlaybackState(): PlaybackState = when (this) {
+internal fun Int.asPlaybackState(): PlaybackState = when (this) {
     Player.STATE_IDLE -> PlaybackState.IDLE
     Player.STATE_BUFFERING -> PlaybackState.BUFFERING
     Player.STATE_READY -> PlaybackState.READY

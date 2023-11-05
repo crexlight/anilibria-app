@@ -1,6 +1,7 @@
 package ru.radiationx.media.mobile.controllers
 
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,11 +10,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.radiationx.media.mobile.RootPlayerHolder
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.PlayerFlow
 
-class UiVisbilityController(
-    private val holder: RootPlayerHolder,
-) {
+internal class UiVisbilityController(
+    private val coroutineScope: CoroutineScope,
+    private val playerFlow: PlayerFlow,
+) : PlayerAttachListener {
 
     companion object {
         private const val CONTROLS_HIDE_DELAY = 2000L
@@ -29,7 +32,7 @@ class UiVisbilityController(
     init {
         combine(
             _internalState,
-            holder.flow.playerState
+            playerFlow.playerState
         ) { internalState, playerState ->
             Log.d("kekeke", "$internalState")
             val seekerVisible = internalState.scrollSeeker || internalState.doubleTapSeeker
@@ -41,7 +44,7 @@ class UiVisbilityController(
                 loadingVisible = playerState.isBlockingLoading,
                 skipVisible = internalState.skip
             )
-        }.launchIn(holder.coroutineScope)
+        }.launchIn(coroutineScope)
     }
 
     fun showMain() {
@@ -76,8 +79,8 @@ class UiVisbilityController(
     private fun startDelayedHideControls() {
         tapJob?.cancel()
         setMainState(true)
-        tapJob = holder.coroutineScope.launch {
-            val needsHide = holder.flow.playerState.value.isPlaying
+        tapJob = coroutineScope.launch {
+            val needsHide = playerFlow.playerState.value.isPlaying
             delay(CONTROLS_HIDE_DELAY)
             if (needsHide) {
                 setMainState(false)

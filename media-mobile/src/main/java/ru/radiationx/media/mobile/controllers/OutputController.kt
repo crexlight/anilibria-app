@@ -2,50 +2,37 @@ package ru.radiationx.media.mobile.controllers
 
 import android.view.TextureView
 import androidx.media3.common.Player
-import androidx.media3.common.VideoSize
-import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import ru.radiationx.media.mobile.AspectRatioFrameLayout
-import ru.radiationx.media.mobile.RootPlayerHolder
-import ru.radiationx.media.mobile.models.PlaybackState
+import ru.radiationx.media.mobile.views.AspectRatioFrameLayout
+import ru.radiationx.media.mobile.PlayerFlow
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
 
-class OutputController(
-    private val holder: RootPlayerHolder,
+internal class OutputController(
+    private val coroutineScope: CoroutineScope,
+    private val playerFlow: PlayerFlow,
     private val mediaTextureView: TextureView,
     private val mediaAspectRatio: AspectRatioFrameLayout,
-) {
+) : PlayerAttachListener {
 
     init {
-        holder.flow.playerState
-            .filterNot {
-                it.videoSize == VideoSize.UNKNOWN || it.playbackState == PlaybackState.IDLE
-            }
+        playerFlow.playerState
+            .map { it.videoSize }
+            .distinctUntilChanged()
             .onEach {
-                updateAspectRatio()
+                mediaAspectRatio.setAspectRatio(it.aspectRatio)
             }
-            .launchIn(holder.coroutineScope)
-
-        holder.addListener(object : RootPlayerHolder.Listener {
-            override fun attachPlayer(player: Player) {
-                player.setVideoTextureView(mediaTextureView)
-            }
-
-            override fun detachPlayer(player: Player) {
-                player.clearVideoTextureView(mediaTextureView)
-            }
-        })
+            .launchIn(coroutineScope)
     }
 
-    private fun updateAspectRatio() {
-        val videoSize = holder.flow.playerState.value.videoSize
-        val width = videoSize.width
-        val height = videoSize.height
-        val videoAspectRatio = if (height == 0 || width == 0) {
-            0f
-        } else {
-            width * videoSize.pixelWidthHeightRatio / height
-        }
-        mediaAspectRatio.setAspectRatio(videoAspectRatio)
+    override fun attachPlayer(player: Player) {
+        player.setVideoTextureView(mediaTextureView)
+    }
+
+    override fun detachPlayer(player: Player) {
+        player.clearVideoTextureView(mediaTextureView)
     }
 }

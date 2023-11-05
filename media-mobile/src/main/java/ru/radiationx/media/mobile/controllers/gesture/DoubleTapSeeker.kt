@@ -2,6 +2,7 @@ package ru.radiationx.media.mobile.controllers.gesture
 
 import android.view.MotionEvent
 import android.view.View
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,12 +13,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.radiationx.media.mobile.RootPlayerHolder
+import ru.radiationx.media.mobile.holder.RootPlayerHolder
 import java.util.concurrent.TimeUnit
 
 @OptIn(FlowPreview::class)
-class DoubleTapSeeker(
+internal class DoubleTapSeeker(
     private val holder: RootPlayerHolder,
+    private val coroutineScope: CoroutineScope,
     private val gestureView: View,
 ) {
 
@@ -60,10 +62,10 @@ class DoubleTapSeeker(
                 }
                 _state.value = SeekerState()
             }
-            .launchIn(holder.coroutineScope)
+            .launchIn(coroutineScope)
     }
 
     fun onDoubleTap(event: MotionEvent) {
-        holder.coroutineScope.launch { doubleTapEvents.emit(event) }
+        coroutineScope.launch { doubleTapEvents.emit(event) }
     }
 }

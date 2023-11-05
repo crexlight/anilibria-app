@@ -9,12 +9,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.radiationx.media.mobile.models.PlaybackState
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.models.PlayerState
+import ru.radiationx.media.mobile.models.TimelineState
 import ru.radiationx.media.mobile.models.asPlaybackState
+import ru.radiationx.media.mobile.models.toState
 
-class PlayerFlow(
+internal class PlayerFlow(
     private val coroutineScope: CoroutineScope,
-) : RootPlayerHolder.Listener {
+) : PlayerAttachListener {
 
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -34,12 +37,17 @@ class PlayerFlow(
 
         override fun onVideoSizeChanged(videoSize: VideoSize) {
             super.onVideoSizeChanged(videoSize)
-            _playerState.update { it.copy(videoSize = videoSize) }
+            _playerState.update { it.copy(videoSize = videoSize.toState()) }
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
             super.onEvents(player, events)
             updateTimeline(player)
+        }
+
+        override fun onRenderedFirstFrame() {
+            super.onRenderedFirstFrame()
+
         }
     }
 
@@ -57,7 +65,7 @@ class PlayerFlow(
                 isPlaying = player.isPlaying,
                 isLoading = player.isLoading,
                 playbackState = player.playbackState.asPlaybackState(),
-                videoSize = player.videoSize
+                videoSize = player.videoSize.toState()
             )
         }
         updateTimeline(player)
@@ -86,17 +94,3 @@ class PlayerFlow(
     }
 }
 
-data class PlayerState(
-    val isPlaying: Boolean = false,
-    val isLoading: Boolean = false,
-    val playbackState: PlaybackState = PlaybackState.IDLE,
-    val videoSize: VideoSize = VideoSize.UNKNOWN,
-) {
-    val isBlockingLoading = !isPlaying && isLoading && playbackState == PlaybackState.BUFFERING
-}
-
-data class TimelineState(
-    val duration: Long = 0,
-    val position: Long = 0,
-    val bufferPercent: Int = 0,
-)

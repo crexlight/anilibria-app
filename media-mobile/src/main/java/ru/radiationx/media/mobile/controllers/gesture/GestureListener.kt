@@ -4,7 +4,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 
-class GestureListener : GestureDetector.SimpleOnGestureListener() {
+internal class GestureListener : GestureDetector.SimpleOnGestureListener() {
 
     private var lastDoubleTapTime = 0L
     private val doubleTapDelay = ViewConfiguration.getDoubleTapTimeout() * 2

@@ -1,4 +1,4 @@
-package ru.radiationx.media.mobile
+package ru.radiationx.media.mobile.views
 
 import android.content.Context
 import android.util.AttributeSet
@@ -13,7 +13,7 @@ enum class ResizeMode {
     ZOOM
 }
 
-class AspectRatioFrameLayout @JvmOverloads constructor(
+internal class AspectRatioFrameLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
 ) : FrameLayout(context, attrs) {

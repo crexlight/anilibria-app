@@ -4,11 +4,11 @@ import android.view.View
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import ru.radiationx.media.mobile.RootPlayerHolder
+import ru.radiationx.media.mobile.holder.RootPlayerHolder
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 
-class ScrollSeeker(
+internal class ScrollSeeker(
     private val holder: RootPlayerHolder,
     private val gestureView: View,
 ) {

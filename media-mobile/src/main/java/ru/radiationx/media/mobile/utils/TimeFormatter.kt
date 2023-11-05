@@ -1,9 +1,9 @@
-package ru.radiationx.media.mobile
+package ru.radiationx.media.mobile.utils
 
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 
-object TimeFormatter {
+internal object TimeFormatter {
     private val oneHour = TimeUnit.HOURS.toMillis(1)
     private val oneMinute = TimeUnit.MINUTES.toMillis(1)
 

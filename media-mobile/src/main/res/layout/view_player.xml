@@ -8,7 +8,7 @@
     tools:parentTag="FrameLayout"
     tools:theme="@style/Theme.MaterialComponents">
 
-    <ru.radiationx.media.mobile.AspectRatioFrameLayout
+    <ru.radiationx.media.mobile.views.AspectRatioFrameLayout
         android:id="@+id/mediaAspectRatio"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,7 +18,7 @@
             android:id="@+id/mediaTextureView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </ru.radiationx.media.mobile.AspectRatioFrameLayout>
+    </ru.radiationx.media.mobile.views.AspectRatioFrameLayout>
 
     <FrameLayout
         android:id="@+id/mediaOverlay"

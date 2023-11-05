@@ -6,17 +6,20 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.TextView
 import androidx.core.view.GestureDetectorCompat
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import ru.radiationx.media.mobile.RootPlayerHolder
-import ru.radiationx.media.mobile.TimeFormatter
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.holder.RootPlayerHolder
+import ru.radiationx.media.mobile.utils.TimeFormatter
 
 @SuppressLint("ClickableViewAccessibility")
-class GestureController(
+internal class GestureController(
     private val holder: RootPlayerHolder,
+    private val coroutineScope: CoroutineScope,
     private val gestureView: View,
     private val seekerTime: TextView,
-) {
+) : PlayerAttachListener {
 
     private val gestureListener = GestureListener()
     private val gestureDetector = GestureDetectorCompat(gestureView.context, gestureListener)
@@ -27,7 +30,7 @@ class GestureController(
         ScaleGestureDetector.SimpleOnScaleGestureListener()
     )
 
-    private val doubleTapSeeker = DoubleTapSeeker(holder, gestureView)
+    private val doubleTapSeeker = DoubleTapSeeker(holder, coroutineScope, gestureView)
     private val scrollSeeker = ScrollSeeker(holder, gestureView)
 
     var singleTapListener: (() -> Unit)? = null
@@ -67,11 +70,11 @@ class GestureController(
 
         doubleTapSeeker.state.onEach {
             seekerTime.text = TimeFormatter.format(it.deltaSeek, true)
-        }.launchIn(holder.coroutineScope)
+        }.launchIn(coroutineScope)
 
         scrollSeeker.state.onEach {
             seekerTime.text = TimeFormatter.format(it.deltaSeek, true)
-        }.launchIn(holder.coroutineScope)
+        }.launchIn(coroutineScope)
     }
 }
 

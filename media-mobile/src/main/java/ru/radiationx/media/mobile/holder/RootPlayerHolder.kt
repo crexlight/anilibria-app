@@ -1,27 +1,17 @@
-package ru.radiationx.media.mobile
+package ru.radiationx.media.mobile.holder
 
 import androidx.media3.common.Player
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 
-class RootPlayerHolder {
+internal class RootPlayerHolder {
 
     private var _player: Player? = null
-    private val listeners = mutableListOf<Listener>()
+    private val listeners = mutableListOf<PlayerAttachListener>()
 
-    val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    val flow = PlayerFlow(coroutineScope)
-
-    init {
-        addListener(flow)
-    }
-
-    fun addListener(listener: Listener) {
+    fun addListener(listener: PlayerAttachListener) {
         listeners.add(listener)
     }
 
-    fun removeListener(listener: Listener) {
+    fun removeListener(listener: PlayerAttachListener) {
         listeners.remove(listener)
     }
 
@@ -47,8 +37,4 @@ class RootPlayerHolder {
         listeners.forEach { it.detachPlayer(player) }
     }
 
-    interface Listener {
-        fun attachPlayer(player: Player)
-        fun detachPlayer(player: Player)
-    }
 }
