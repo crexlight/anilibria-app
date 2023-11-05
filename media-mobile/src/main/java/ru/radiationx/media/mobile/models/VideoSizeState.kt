@@ -2,7 +2,7 @@ package ru.radiationx.media.mobile.models
 
 import androidx.media3.common.VideoSize
 
-internal data class VideoSizeState(
+data class VideoSizeState(
     val width: Int = 0,
     val height: Int = 0,
     val aspectRatio: Float = DEFAULT_ASPECT_RATIO,

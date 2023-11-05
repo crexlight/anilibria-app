@@ -1,6 +1,5 @@
 package ru.radiationx.media.mobile.controllers
 
-import android.util.Log
 import android.widget.TextView
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
@@ -14,14 +13,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import ru.radiationx.media.mobile.holder.PlayerAttachListener
 import ru.radiationx.media.mobile.PlayerFlow
-import ru.radiationx.media.mobile.holder.RootPlayerHolder
-import ru.radiationx.media.mobile.utils.TimeFormatter
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
 import ru.radiationx.media.mobile.models.TimelineState
+import ru.radiationx.media.mobile.utils.TimeFormatter
 
 internal class TimelineController(
-    private val holder: RootPlayerHolder,
     private val coroutineScope: CoroutineScope,
     private val playerFlow: PlayerFlow,
     private val slider: Slider,
@@ -49,16 +46,14 @@ internal class TimelineController(
             }
 
             override fun onStartTrackingTouch(slider: Slider) {
-                Log.d("kekeke", "onStartTrackingTouch")
                 _seekState.value = slider.value.toLong()
                 slider.addOnChangeListener(changeListener)
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                Log.d("kekeke", "onStopTrackingTouch")
                 slider.removeOnChangeListener(changeListener)
                 _seekState.value = null
-                holder.getPlayer()?.seekTo(slider.value.toLong())
+                playerFlow.seekTo(slider.value.toLong())
             }
         })
 

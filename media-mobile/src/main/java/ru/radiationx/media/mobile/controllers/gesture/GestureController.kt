@@ -9,13 +9,13 @@ import androidx.core.view.GestureDetectorCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import ru.radiationx.media.mobile.PlayerFlow
 import ru.radiationx.media.mobile.holder.PlayerAttachListener
-import ru.radiationx.media.mobile.holder.RootPlayerHolder
 import ru.radiationx.media.mobile.utils.TimeFormatter
 
 @SuppressLint("ClickableViewAccessibility")
 internal class GestureController(
-    private val holder: RootPlayerHolder,
+    private val playerFlow: PlayerFlow,
     private val coroutineScope: CoroutineScope,
     private val gestureView: View,
     private val seekerTime: TextView,
@@ -30,8 +30,8 @@ internal class GestureController(
         ScaleGestureDetector.SimpleOnScaleGestureListener()
     )
 
-    private val doubleTapSeeker = DoubleTapSeeker(holder, coroutineScope, gestureView)
-    private val scrollSeeker = ScrollSeeker(holder, gestureView)
+    private val doubleTapSeeker = DoubleTapSeeker(playerFlow, coroutineScope, gestureView)
+    private val scrollSeeker = ScrollSeeker(playerFlow, gestureView)
 
     var singleTapListener: (() -> Unit)? = null
 
@@ -61,11 +61,11 @@ internal class GestureController(
         }
 
         doubleTapSeeker.applyListener = {
-            holder.getPlayer()?.seekTo(it.initialSeek + it.deltaSeek)
+            playerFlow.seekTo(it.initialSeek + it.deltaSeek)
         }
 
         scrollSeeker.applyListener = {
-            holder.getPlayer()?.seekTo(it.initialSeek + it.deltaSeek)
+            playerFlow.seekTo(it.initialSeek + it.deltaSeek)
         }
 
         doubleTapSeeker.state.onEach {

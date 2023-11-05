@@ -13,12 +13,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.radiationx.media.mobile.holder.RootPlayerHolder
+import ru.radiationx.media.mobile.PlayerFlow
 import java.util.concurrent.TimeUnit
 
 @OptIn(FlowPreview::class)
 internal class DoubleTapSeeker(
-    private val holder: RootPlayerHolder,
+    private val playerFlow: PlayerFlow,
     private val coroutineScope: CoroutineScope,
     private val gestureView: View,
 ) {
@@ -45,7 +45,7 @@ internal class DoubleTapSeeker(
                     val newInitialSeek = if (it.isActive) {
                         it.initialSeek
                     } else {
-                        holder.getPlayer()?.currentPosition ?: 0
+                        playerFlow.timelineState.value.position
                     }
                     it.copy(
                         isActive = true,

@@ -7,12 +7,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
-import ru.radiationx.media.mobile.holder.PlayerAttachListener
 import ru.radiationx.media.mobile.PlayerFlow
-import ru.radiationx.media.mobile.holder.RootPlayerHolder
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
 
 internal class SkipsController(
-    private val holder: RootPlayerHolder,
     private val coroutineScope: CoroutineScope,
     private val playerFlow: PlayerFlow,
     private val skipButtonCancel: View,
@@ -30,7 +28,7 @@ internal class SkipsController(
         }
         skipButtonSkip.setOnClickListener {
             _currentSkip.value?.also {
-                holder.getPlayer()?.seekTo(it.end)
+                playerFlow.seekTo(it.end)
             }
             cancelCurrentSkip()
         }

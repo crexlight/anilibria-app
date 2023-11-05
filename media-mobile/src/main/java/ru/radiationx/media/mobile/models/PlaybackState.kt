@@ -2,7 +2,7 @@ package ru.radiationx.media.mobile.models
 
 import androidx.media3.common.Player
 
-internal enum class PlaybackState {
+enum class PlaybackState {
     IDLE,
     BUFFERING,
     READY,

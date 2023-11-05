@@ -4,12 +4,12 @@ import android.view.View
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import ru.radiationx.media.mobile.holder.RootPlayerHolder
+import ru.radiationx.media.mobile.PlayerFlow
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 
 internal class ScrollSeeker(
-    private val holder: RootPlayerHolder,
+    private val playerFlow: PlayerFlow,
     private val gestureView: View,
 ) {
 
@@ -28,7 +28,7 @@ internal class ScrollSeeker(
             val newInitialSeek = if (it.isActive) {
                 it.initialSeek
             } else {
-                holder.getPlayer()?.currentPosition ?: 0
+                playerFlow.timelineState.value.position
             }
             it.copy(
                 isActive = true,

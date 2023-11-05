@@ -5,12 +5,10 @@ import androidx.core.view.isInvisible
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import ru.radiationx.media.mobile.holder.PlayerAttachListener
 import ru.radiationx.media.mobile.PlayerFlow
-import ru.radiationx.media.mobile.holder.RootPlayerHolder
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
 
 internal class MediaButtonsController(
-    private val holder: RootPlayerHolder,
     private val coroutineScope: CoroutineScope,
     private val playerFlow: PlayerFlow,
     private val mediaButtonPrev: Button,
@@ -26,11 +24,10 @@ internal class MediaButtonsController(
         }
         mediaButtonPlay.setOnClickListener {
             onAnyTap?.invoke()
-            val player = holder.getPlayer() ?: return@setOnClickListener
             if (playerFlow.playerState.value.isPlaying) {
-                player.pause()
+                playerFlow.pause()
             } else {
-                player.play()
+                playerFlow.play()
             }
         }
         mediaButtonNext.setOnClickListener {

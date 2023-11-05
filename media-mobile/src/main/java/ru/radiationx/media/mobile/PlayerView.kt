@@ -1,6 +1,7 @@
 package ru.radiationx.media.mobile
 
 import android.content.Context
+import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
 import android.widget.FrameLayout
@@ -48,7 +49,6 @@ class PlayerView @JvmOverloads constructor(
     )
 
     private val mediaButtonsController = MediaButtonsController(
-        holder = holder,
         coroutineScope = coroutineScope,
         playerFlow = playerFlow,
         mediaButtonPrev = binding.mediaButtonPrev,
@@ -57,7 +57,6 @@ class PlayerView @JvmOverloads constructor(
     )
 
     private val timelineController = TimelineController(
-        holder = holder,
         coroutineScope = coroutineScope,
         playerFlow = playerFlow,
         slider = binding.mediaSlider,
@@ -66,14 +65,13 @@ class PlayerView @JvmOverloads constructor(
     )
 
     private val gestureController = GestureController(
-        holder = holder,
+        playerFlow = playerFlow,
         coroutineScope = coroutineScope,
         gestureView = binding.mediaOverlay,
         seekerTime = binding.mediaSeekerTime
     )
 
     private val skipsController = SkipsController(
-        holder = holder,
         coroutineScope = coroutineScope,
         playerFlow = playerFlow,
         skipButtonCancel = binding.mediaSkipButtonCancel,
@@ -90,7 +88,6 @@ class PlayerView @JvmOverloads constructor(
         holder.addListener(skipsController)
 
         uiVisbilityController.state.onEach {
-            Log.d("kekeke", "$it")
             TransitionManager.beginDelayedTransition(
                 binding.mediaOverlay,
                 AutoTransition().apply {
@@ -131,11 +128,28 @@ class PlayerView @JvmOverloads constructor(
             uiVisbilityController.updateSkip(it != null)
         }.launchIn(coroutineScope)
 
+        playerFlow.preparedFlow.onEach {
+            Log.e("kekeke", "preparedFlow $it")
+        }.launchIn(coroutineScope)
+
+        playerFlow.completedFlow.onEach {
+            Log.e("kekeke", "completedFlow $it")
+        }.launchIn(coroutineScope)
     }
 
     fun setPlayer(player: Player?) {
         holder.setPlayer(player)
     }
 
+    fun prepare(uri: Uri) {
+        playerFlow.prepare(uri)
+    }
 
+    fun play() {
+        playerFlow.play()
+    }
+
+    fun pause() {
+        playerFlow.pause()
+    }
 }

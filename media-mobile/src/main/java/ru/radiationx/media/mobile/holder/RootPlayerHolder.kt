@@ -21,14 +21,6 @@ internal class RootPlayerHolder {
         _player?.also { attachPlayer(it) }
     }
 
-    fun getPlayer(): Player? {
-        return _player
-    }
-
-    fun requirePlayer(): Player {
-        return requireNotNull(_player)
-    }
-
     private fun attachPlayer(player: Player) {
         listeners.forEach { it.attachPlayer(player) }
     }

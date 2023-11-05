@@ -1,6 +1,5 @@
 package ru.radiationx.media.mobile.controllers
 
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -10,8 +9,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.radiationx.media.mobile.holder.PlayerAttachListener
 import ru.radiationx.media.mobile.PlayerFlow
+import ru.radiationx.media.mobile.holder.PlayerAttachListener
 
 internal class UiVisbilityController(
     private val coroutineScope: CoroutineScope,
@@ -34,7 +33,6 @@ internal class UiVisbilityController(
             _internalState,
             playerFlow.playerState
         ) { internalState, playerState ->
-            Log.d("kekeke", "$internalState")
             val seekerVisible = internalState.scrollSeeker || internalState.doubleTapSeeker
             val mainVisible = internalState.main || internalState.slider
             _state.value = UiVisibilityState(
