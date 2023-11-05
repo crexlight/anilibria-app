@@ -127,6 +127,12 @@ class PlayerView @JvmOverloads constructor(
         playerFlow.playerState.onEach {
             Log.d("kekeke", "playerState $it")
         }.launchIn(coroutineScope)
+
+        skipsController.setSkips(
+            listOf(
+                SkipsController.Skip(2000, 100000)
+            )
+        )
     }
 
     fun setPlayer(player: Player?) {

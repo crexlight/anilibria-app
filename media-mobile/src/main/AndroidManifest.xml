@@ -4,6 +4,7 @@
     <application>
         <activity
             android:name="ru.radiationx.media.mobile.TestVideoPlayerActivity"
+            android:theme="@style/Theme.MaterialComponents"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|screenLayout|screenSize"
             android:exported="false"
             android:launchMode="singleTask" />

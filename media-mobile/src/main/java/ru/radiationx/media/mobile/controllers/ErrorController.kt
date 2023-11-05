@@ -4,6 +4,7 @@ import android.widget.Button
 import android.widget.TextView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -21,8 +22,11 @@ class ErrorController(
         errorButtonAction.setOnClickListener {
             playerFlow.play()
         }
-        playerFlow.playerState.map { it.errorMessage }.distinctUntilChanged().onEach {
-            errorMessageText.text = it
-        }.launchIn(coroutineScope)
+        playerFlow.playerState
+            .map { it.errorMessage }
+            .filterNotNull()
+            .distinctUntilChanged()
+            .onEach { errorMessageText.text = it }
+            .launchIn(coroutineScope)
     }
 }

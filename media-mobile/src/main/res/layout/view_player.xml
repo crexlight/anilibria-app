@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:background="#000"
+    tools:background="?colorSurface"
     tools:parentTag="FrameLayout"
-    tools:theme="@style/Theme.MaterialComponents">
+    tools:theme="@style/Theme.MaterialComponents.DayNight">
 
     <ru.radiationx.media.mobile.views.AspectRatioFrameLayout
         android:id="@+id/mediaAspectRatio"
@@ -17,7 +17,8 @@
         <TextureView
             android:id="@+id/mediaTextureView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            tools:background="#fff" />
     </ru.radiationx.media.mobile.views.AspectRatioFrameLayout>
 
     <FrameLayout
@@ -29,30 +30,48 @@
             android:id="@+id/mediaScrim"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#3000" />
+            android:background="#6000" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/mediaButtonsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:background="@android:color/transparent"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="visible">
 
-            <Button
+            <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/mediaButtonPrev"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_media_control_button"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_media_skip_previous_24"
+                app:tint="?colorOnSurface" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/mediaButtonPlay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_marginHorizontal="32dp"
+                android:background="@drawable/bg_media_control_button"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_media_play_arrow_24"
+                app:tint="?colorOnSurface" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/mediaButtonNext"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_media_control_button"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_media_skip_next_24"
+                app:tint="?colorOnSurface" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -62,30 +81,37 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="16dp"
-            android:background="?colorSurface"
+            android:background="@drawable/bg_media_floating_container"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:visibility="gone">
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Произошла ошибка"
+                android:text="Ошибка при воспроизведении"
+                android:textColor="?colorOnSurface"
                 android:textSize="16sp" />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/mediaErrorMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:gravity="center"
+                android:maxWidth="360dp"
+                android:textColor="?colorOnSurface"
                 android:textSize="12sp"
                 tools:text="2000:ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/mediaErrorAction"
+                style="?materialButtonOutlinedStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:text="Обновить" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
@@ -95,8 +121,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="?colorSurface"
-            android:padding="32dp" />
+            android:background="@drawable/bg_media_floating_container"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp"
+            android:textColor="?colorOnSurface"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            tools:text="+1:20:25" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
@@ -108,7 +140,8 @@
                 android:id="@+id/mediaSkipContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="end">
+                android:gravity="end"
+                android:paddingBottom="8dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/mediaSkipButtonSkip"
@@ -119,6 +152,7 @@
                     android:text="Пропустить"
                     android:textAllCaps="false"
                     android:textColor="?colorOnSurface"
+                    app:backgroundTint="#6000"
                     app:strokeColor="?colorOnSurface" />
 
                 <com.google.android.material.button.MaterialButton
@@ -130,6 +164,7 @@
                     android:text="Смотреть"
                     android:textAllCaps="false"
                     android:textColor="?colorOnSurface"
+                    app:backgroundTint="#6000"
                     app:strokeColor="?colorOnSurface" />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -138,30 +173,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
-                <androidx.appcompat.widget.LinearLayoutCompat
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <androidx.appcompat.widget.AppCompatTextView
-                        android:id="@+id/mediaTime"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        tools:text="10:10:10 / 10:10:10" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -175,16 +186,64 @@
                         app:thumbColor="#0000"
                         app:thumbElevation="0dp"
                         app:thumbRadius="0dp"
-                        app:trackColorActive="#0f0"
-                        app:trackColorInactive="#00f" />
+                        app:trackColorActive="@color/color_media_slider_active"
+                        app:trackColorInactive="@color/color_media_slider_inactive" />
 
                     <com.google.android.material.slider.Slider
                         android:id="@+id/mediaSlider"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
-                        app:thumbRadius="8dp"
+                        app:thumbRadius="6dp"
                         app:trackColorInactive="#0000" />
                 </FrameLayout>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-16dp"
+                    android:background="@android:color/transparent"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="4dp"
+                    android:paddingBottom="8dp">
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/mediaTime"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="?colorOnSurface"
+                        android:textSize="14sp"
+                        tools:text="10:10:10 / 10:10:10" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?actionBarItemBackground"
+                        app:srcCompat="@drawable/ic_media_picture_in_picture_alt_24"
+                        app:tint="?colorOnSurface" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?actionBarItemBackground"
+                        app:srcCompat="@drawable/ic_media_settings_24"
+                        app:tint="?colorOnSurface" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?actionBarItemBackground"
+                        app:srcCompat="@drawable/ic_media_settings_overscan_24"
+                        app:tint="?colorOnSurface" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?actionBarItemBackground"
+                        app:srcCompat="@drawable/ic_media_fullscreen_24"
+                        app:tint="?colorOnSurface" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.appcompat.widget.LinearLayoutCompat>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
@@ -196,6 +255,7 @@
         android:id="@+id/mediaLoading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
 </merge>

@@ -44,11 +44,11 @@ internal class UiVisbilityController(
             val mainVisible = internalState.main || internalState.slider
             _state.value = UiVisibilityState(
                 mainVisible = mainVisible,
-                controlsVisible = !seekerVisible && mainVisible,
+                controlsVisible = !seekerVisible && mainVisible && !hasError,
                 seekerVisible = seekerVisible,
                 loadingVisible = playerState.isBlockingLoading,
                 skipVisible = internalState.skip,
-                errorVisible = hasError
+                errorVisible = !seekerVisible && hasError
             )
         }.launchIn(coroutineScope)
 
