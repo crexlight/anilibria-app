@@ -126,25 +126,37 @@ class PlayerFlow(
         prepareNotified = false
         completedNotified = false
         withPlayer {
-            setMediaItem(MediaItem.fromUri(uri))
-            prepare()
+            it.setMediaItem(MediaItem.fromUri(uri))
+            it.prepare()
         }
     }
 
     fun play() {
         completedNotified = false
-        withPlayer { play() }
+        withPlayer {
+            it.play()
+        }
     }
 
     fun pause() {
-        withPlayer { pause() }
+        withPlayer {
+            it.pause()
+        }
     }
 
     fun seekTo(position: Long) {
-        withPlayer { seekTo(position) }
+        withPlayer {
+            it.seekTo(position)
+        }
     }
 
-    private fun withPlayer(block: Player.() -> Unit) {
+    fun setSpeed(speed: Float) {
+        withPlayer {
+            it.setPlaybackSpeed(speed)
+        }
+    }
+
+    private fun withPlayer(block: (Player) -> Unit) {
         val player = _player ?: return
         block.invoke(player)
     }

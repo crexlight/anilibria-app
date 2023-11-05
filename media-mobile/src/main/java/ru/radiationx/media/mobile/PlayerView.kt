@@ -152,4 +152,8 @@ class PlayerView @JvmOverloads constructor(
     fun pause() {
         playerFlow.pause()
     }
+
+    fun setSpeed(speed: Float) {
+        playerFlow.setSpeed(speed)
+    }
 }
