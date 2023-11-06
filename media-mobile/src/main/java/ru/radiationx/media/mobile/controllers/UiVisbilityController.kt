@@ -1,7 +1,8 @@
 package ru.radiationx.media.mobile.controllers
 
 import androidx.core.view.isVisible
-import androidx.transition.AutoTransition
+import androidx.transition.ChangeBounds
+import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +36,19 @@ internal class UiVisbilityController(
     private val _state = MutableStateFlow(UiVisibilityState())
 
     init {
+        val overlayTransition = TransitionSet().apply {
+            ordering = TransitionSet.ORDERING_SEQUENTIAL
+            addTransition(Fade(Fade.OUT).apply {
+                duration = 150
+            })
+            addTransition(ChangeBounds().apply {
+                duration = 200
+            })
+            addTransition(Fade(Fade.IN).apply {
+                duration = 150
+            })
+        }
+
         combine(
             _internalState,
             playerFlow.playerState
@@ -56,13 +70,7 @@ internal class UiVisbilityController(
         }.launchIn(coroutineScope)
 
         _state.onEach {
-            TransitionManager.beginDelayedTransition(
-                binding.mediaOverlay,
-                AutoTransition().apply {
-                    ordering = TransitionSet.ORDERING_TOGETHER
-                    duration = 200L
-                }
-            )
+            TransitionManager.beginDelayedTransition(binding.mediaOverlay, overlayTransition)
 
             binding.mediaButtonsContainer.isVisible = it.controlsVisible
             binding.mediaFooter.isVisible = it.mainVisible
