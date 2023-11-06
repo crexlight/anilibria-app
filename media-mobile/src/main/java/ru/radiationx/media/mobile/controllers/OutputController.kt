@@ -51,13 +51,7 @@ internal class OutputController(
             } else {
                 1f
             }
-            if (state.canApply) {
-                mediaAspectRatio.animate().scaleX(scale).scaleY(scale).start()
-            } else {
-                mediaAspectRatio.animation?.cancel()
-                mediaAspectRatio.scaleX = scale
-                mediaAspectRatio.scaleY = scale
-            }
+            mediaAspectRatio.animate().scaleX(scale).scaleY(scale).start()
             scaleButton.isVisible = state.canApply
         }.launchIn(coroutineScope)
     }
@@ -79,8 +73,15 @@ internal class OutputController(
         val layoutScale = getApplyibleScale()
         val coercedScale = scale.coerceIn(0.95f, layoutScale * 1.05f)
         val layoutScaleDiff = layoutScale - 1f
-        val targetFill = coercedScale >= (1f + layoutScaleDiff / 2)
-        _state.update { it.copy(isLiveScale = true, targetFill = targetFill) }
+
+        _state.update {
+            val targetFill = if (it.canApply) {
+                coercedScale >= (1f + layoutScaleDiff / 2)
+            } else {
+                it.targetFill
+            }
+            it.copy(isLiveScale = true, targetFill = targetFill)
+        }
         mediaAspectRatio.scaleX = coercedScale
         mediaAspectRatio.scaleY = coercedScale
     }
