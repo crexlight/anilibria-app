@@ -114,6 +114,7 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
         binding.playerView.setPlayer(player.getPlayer())
         player.getPlayer()?.addAnalyticsListener(object : AnalyticsListener {
             val times = mutableListOf<Long>()
+            val hostCounter = mutableMapOf<String, Int>()
 
             @UnstableApi
             override fun onLoadCompleted(
@@ -132,17 +133,21 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
                 times.add(loadEventInfo.loadDurationMs)
                 val protocol = loadEventInfo.responseHeaders.let {
                     (it.get("x-server-proto") ?: it.get("X-Server-Proto"))?.firstOrNull()
-                }
+                }.orEmpty()
+                val frontHost = loadEventInfo.responseHeaders.let {
+                    (it.get("front-hostname") ?: it.get("Front-Hostname"))?.firstOrNull()
+                }.orEmpty()
+                hostCounter[frontHost] = hostCounter.getOrPut(frontHost) { 0 } + 1
                 Log.e(
-                    "kekeke_loading",
+                    "lololo_loading",
                     "loadEventInfo.loadDurationMs ${loadEventInfo.loadDurationMs}, average ${
                         times.average().toLong()
-                    }, protocol ${protocol}"
+                    }, protocol ${protocol}, hostname $frontHost[${hostCounter.get(frontHost)}]"
                 )
                 /*loadEventInfo.responseHeaders.also {
                     Log.e(
                         "kekeke",
-                        "onLoadCompleted response headers ${it.get("x-server-proto") ?: it.get("X-Server-Proto")}"
+                        "onLoadCompleted response headers ${it}"
                     )
                 }*/
                 super.onLoadCompleted(eventTime, loadEventInfo, mediaLoadData)
