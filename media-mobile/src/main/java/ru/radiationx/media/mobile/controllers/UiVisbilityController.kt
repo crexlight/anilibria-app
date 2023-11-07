@@ -1,12 +1,6 @@
 package ru.radiationx.media.mobile.controllers
 
-import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.transition.AutoTransition
-import androidx.transition.ChangeBounds
-import androidx.transition.Fade
-import androidx.transition.TransitionManager
-import androidx.transition.TransitionSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -19,6 +13,7 @@ import kotlinx.coroutines.launch
 import ru.radiationx.media.mobile.PlayerFlow
 import ru.radiationx.media.mobile.databinding.ViewPlayerBinding
 import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.holder.TransitionHelper
 import ru.radiationx.media.mobile.models.PlaybackState
 
 internal class UiVisbilityController(
@@ -38,30 +33,18 @@ internal class UiVisbilityController(
     private val _state = MutableStateFlow(UiVisibilityState())
 
     init {
-        var overlayTransition = TransitionSet().apply {
-            ordering = TransitionSet.ORDERING_SEQUENTIAL
-            addTransition(Fade(Fade.OUT).apply {
-                duration = 150
-            })
-            addTransition(ChangeBounds().apply {
-                duration = 200
-            })
-            addTransition(Fade(Fade.IN).apply {
-                duration = 150
-            })
-        }
-
-        overlayTransition = AutoTransition().apply {
-            ordering = TransitionSet.ORDERING_TOGETHER
-            duration = 200
-        }
-
-        val rootTransition = AutoTransition().apply {
-            ordering = TransitionSet.ORDERING_TOGETHER
-            duration = 200
-            addTarget(binding.mediaScrim)
-            addTarget(binding.mediaScaleStroke)
-        }
+        val targetViews = listOf(
+            binding.mediaButtonsContainer,
+            binding.mediaFooter,
+            binding.mediaFooterContainer,
+            binding.mediaLoading,
+            binding.mediaSeekerTime,
+            binding.mediaScrim,
+            binding.mediaSkipContainer,
+            binding.mediaErrorContainer,
+            binding.mediaScaleStroke
+        )
+        val transitionHelper = TransitionHelper(binding.mediaOverlay, targetViews)
 
         combine(
             _internalState,
@@ -84,9 +67,7 @@ internal class UiVisbilityController(
         }.launchIn(coroutineScope)
 
         _state.onEach {
-            TransitionManager.beginDelayedTransition(binding.mediaOverlay, overlayTransition)
-            //TransitionManager.beginDelayedTransition(binding.root as ViewGroup, rootTransition)
-
+            transitionHelper.beginDelayedTransition()
             binding.mediaButtonsContainer.isVisible = it.controlsVisible
             binding.mediaFooter.isVisible = it.mainVisible
             binding.mediaLoading.isVisible = it.loadingVisible
