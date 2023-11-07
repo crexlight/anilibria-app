@@ -5,6 +5,12 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
 import android.widget.FrameLayout
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updateMargins
+import androidx.core.view.updatePadding
 import androidx.media3.common.Player
 import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.CoroutineScope
@@ -66,7 +72,7 @@ class PlayerView @JvmOverloads constructor(
     private val gestureController = GestureController(
         playerFlow = playerFlow,
         coroutineScope = coroutineScope,
-        gestureView = binding.mediaOverlay,
+        gestureView = binding.mediaGestures,
         seekerTime = binding.mediaSeekerTime,
         mediaAspectRatio = binding.mediaAspectRatio
     )
@@ -140,6 +146,31 @@ class PlayerView @JvmOverloads constructor(
                 SkipsController.Skip(2000, 100000)
             )
         )
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val barInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            val cutoutInsets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+            val gesturesInsets = insets.getInsets(WindowInsetsCompat.Type.systemGestures())
+
+            val footerInsets = Insets.max(barInsets, cutoutInsets)
+            binding.mediaFooterContainer.updatePadding(
+                left = footerInsets.left,
+                top = footerInsets.top,
+                right = footerInsets.right,
+                bottom = footerInsets.bottom
+            )
+
+            binding.mediaGestures.updateLayoutParams<LayoutParams> {
+                updateMargins(
+                    left = gesturesInsets.left,
+                    top = gesturesInsets.top,
+                    right = gesturesInsets.right,
+                    bottom = gesturesInsets.bottom
+                )
+            }
+
+            insets
+        }
     }
 
     fun setPlayer(player: Player?) {

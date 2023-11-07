@@ -11,7 +11,8 @@
     <FrameLayout
         android:id="@+id/mediaScaleContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="#000">
 
         <ru.radiationx.media.mobile.views.AspectRatioFrameLayout
             android:id="@+id/mediaAspectRatio"
@@ -27,6 +28,11 @@
         </ru.radiationx.media.mobile.views.AspectRatioFrameLayout>
 
     </FrameLayout>
+
+    <View
+        android:id="@+id/mediaGestures"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <FrameLayout
         android:id="@+id/mediaOverlay"
@@ -145,9 +151,11 @@
             tools:text="+1:20:25" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/mediaFooterContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            android:clipToPadding="false"
             android:orientation="vertical">
 
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -167,7 +175,7 @@
                     android:textAllCaps="false"
                     android:textColor="?colorOnSurface"
                     app:backgroundTint="#6000"
-                    app:strokeColor="#6000" />
+                    app:strokeColor="#6fff" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/mediaSkipButtonCancel"
@@ -179,7 +187,7 @@
                     android:textAllCaps="false"
                     android:textColor="?colorOnSurface"
                     app:backgroundTint="#6000"
-                    app:strokeColor="#6000" />
+                    app:strokeColor="#6fff" />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -202,8 +210,7 @@
                     android:background="@android:color/transparent"
                     android:gravity="center_vertical"
                     android:paddingStart="16dp"
-                    android:paddingEnd="4dp"
-                    android:paddingBottom="8dp">
+                    android:paddingEnd="4dp">
 
                     <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/mediaTime"
@@ -247,14 +254,13 @@
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
+        <ProgressBar
+            android:id="@+id/mediaLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
     </FrameLayout>
-
-    <ProgressBar
-        android:id="@+id/mediaLoading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
 
 </merge>
