@@ -105,6 +105,8 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
 
     private var createdWithSavedState = false
 
+    private val testVideoPlayer = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.DayNightAppTheme_NoActionBar)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -112,7 +114,7 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
         if (isLaunchedFromHistory()) {
             get<ActivityLaunchAnalytics>().launchFromHistory(this, savedInstanceState)
         }
-        if (true) {
+        if (testVideoPlayer) {
             startActivity(Intent(this, TestVideoPlayerActivity::class.java))
             finish()
             return
@@ -170,7 +172,7 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
 
     override fun onDestroy() {
         super.onDestroy()
-        if(false){
+        if(!testVideoPlayer){
             binding.tabsRecycler.adapter = null
 
         }
