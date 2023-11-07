@@ -75,6 +75,9 @@ class PlayerFlow(
 
         override fun onVideoSizeChanged(videoSize: VideoSize) {
             super.onVideoSizeChanged(videoSize)
+            if (videoSize == VideoSize.UNKNOWN) {
+                return
+            }
             _playerState.update { it.copy(videoSize = videoSize.toState()) }
         }
 

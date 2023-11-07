@@ -55,19 +55,26 @@ internal class UiVisbilityController(
                 (internalState.scrollSeeker || internalState.doubleTapSeeker) && !internalState.liveScale
             val mainVisible =
                 (internalState.main || internalState.slider) && !internalState.liveScale
+            val hasPip = internalState.pip
+
             _state.value = UiVisibilityState(
-                mainVisible = mainVisible,
-                controlsVisible = !seekerVisible && mainVisible && !hasError,
-                seekerVisible = seekerVisible,
+                mainVisible = !hasPip && mainVisible,
+                controlsVisible = !hasPip && !seekerVisible && mainVisible && !hasError,
+                seekerVisible = !hasPip && seekerVisible,
                 loadingVisible = playerState.isBlockingLoading,
-                skipVisible = internalState.skip && !internalState.liveScale,
-                errorVisible = !seekerVisible && hasError,
-                liveScaleVisible = internalState.liveScale
+                skipVisible = !hasPip && internalState.skip && !internalState.liveScale,
+                errorVisible = !hasPip && !seekerVisible && hasError,
+                liveScaleVisible = !hasPip && internalState.liveScale,
+                needsTransition = !hasPip
             )
         }.launchIn(coroutineScope)
 
         _state.onEach {
-            transitionHelper.beginDelayedTransition()
+            if (it.needsTransition) {
+                transitionHelper.beginDelayedTransition()
+            } else {
+                transitionHelper.endTransition()
+            }
             binding.mediaButtonsContainer.isVisible = it.controlsVisible
             binding.mediaFooter.isVisible = it.mainVisible
             binding.mediaLoading.isVisible = it.loadingVisible
@@ -112,6 +119,10 @@ internal class UiVisbilityController(
         _internalState.update { it.copy(liveScale = active) }
     }
 
+    fun updatePip(active: Boolean) {
+        _internalState.update { it.copy(pip = active) }
+    }
+
     private fun startDelayedHideControls() {
         tapJob?.cancel()
         setMainState(true)
@@ -137,6 +148,7 @@ internal class UiVisbilityController(
         val slider: Boolean = false,
         val skip: Boolean = false,
         val liveScale: Boolean = false,
+        val pip: Boolean = false,
     )
 
     private data class UiVisibilityState(
@@ -147,5 +159,6 @@ internal class UiVisbilityController(
         val skipVisible: Boolean = false,
         val errorVisible: Boolean = false,
         val liveScaleVisible: Boolean = false,
+        val needsTransition: Boolean = true,
     )
 }

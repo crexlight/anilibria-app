@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import ru.radiationx.shared.ktx.android.immutableFlag
+import timber.log.Timber
 
 
 class PictureInPictureController(
@@ -55,22 +56,29 @@ class PictureInPictureController(
 
     private var currentParamsState = ParamsState()
 
-    private var _state = MutableStateFlow(
-        State(
-            supports = isPipSupports(),
-            active = isInPictureInPictureMode()
-        )
-    )
+    private var _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
 
     var actionsListener: ((Action) -> Unit)? = null
 
-    init {
+    fun init() {
+        updateState()
         activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onCreate(owner: LifecycleOwner) {
                 super.onCreate(owner)
+                updateState()
                 activity.addOnPictureInPictureModeChangedListener(modeListener)
                 registerActionsReceiver()
+            }
+
+            override fun onStart(owner: LifecycleOwner) {
+                super.onStart(owner)
+                updateState()
+            }
+
+            override fun onResume(owner: LifecycleOwner) {
+                super.onResume(owner)
+                updateState()
             }
 
             override fun onDestroy(owner: LifecycleOwner) {
@@ -82,15 +90,33 @@ class PictureInPictureController(
     }
 
     fun enter() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isPipSupports()) {
-            activity.enterPictureInPictureMode(currentParamsState.toParams())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _state.value.supports) {
+            try {
+                val result = activity.enterPictureInPictureMode(currentParamsState.toParams())
+                _state.update { it.copy(active = result) }
+            } catch (ex: Exception) {
+                Timber.e(ex)
+            }
         }
     }
 
     fun updateParams(block: (ParamsState) -> ParamsState) {
         currentParamsState = block.invoke(currentParamsState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isPipSupports()) {
-            activity.setPictureInPictureParams(currentParamsState.toParams())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _state.value.supports) {
+            try {
+                activity.setPictureInPictureParams(currentParamsState.toParams())
+            } catch (ex: Exception) {
+                Timber.e(ex)
+            }
+        }
+    }
+
+    private fun updateState() {
+        _state.update {
+            it.copy(
+                supports = isPipSupports(),
+                active = isInPictureInPictureMode()
+            )
         }
     }
 
@@ -103,8 +129,8 @@ class PictureInPictureController(
     private fun unregisterActionsReceiver() {
         try {
             activity.unregisterReceiver(actionsReceiver)
-        } catch (ignore: Throwable) {
-            // do nothing
+        } catch (ex: Exception) {
+            Timber.e(ex)
         }
     }
 
@@ -163,8 +189,8 @@ class PictureInPictureController(
     }
 
     data class State(
-        val supports: Boolean,
-        val active: Boolean,
+        val supports: Boolean = false,
+        val active: Boolean = false,
     )
 
     data class ParamsState(
@@ -177,6 +203,5 @@ class PictureInPictureController(
         val code: Int,
         val title: String,
         @DrawableRes val icRes: Int,
-        val important: Boolean,
     )
 }

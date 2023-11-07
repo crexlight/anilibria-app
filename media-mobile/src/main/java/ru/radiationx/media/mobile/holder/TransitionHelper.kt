@@ -28,6 +28,10 @@ internal class TransitionHelper(
         TransitionManager.beginDelayedTransition(transitionRoot, overlayTransition)
     }
 
+    fun endTransition() {
+        TransitionManager.endTransitions(transitionRoot)
+    }
+
     // Problem: after screen rotating views has a wrong bounds, therefore transition looks weird
     // Fix for invisible views apearing after again visible
     // Needs reset isLaidOut and view bounds for disable "weird" ChangeBounds transition

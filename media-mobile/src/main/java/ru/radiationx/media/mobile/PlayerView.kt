@@ -8,6 +8,7 @@ import android.widget.FrameLayout
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
 import androidx.core.view.updatePadding
@@ -90,6 +91,15 @@ class PlayerView @JvmOverloads constructor(
         errorButtonAction = binding.mediaErrorAction
     )
 
+    val playerState = playerFlow.playerState
+    val outputState = outputController.outputState
+
+    var onPrevClick: (() -> Unit)? = null
+    var onNextClick: (() -> Unit)? = null
+    var onPipClick: (() -> Unit)? = null
+    var onSettingsClick: (() -> Unit)? = null
+
+
     init {
         holder.addListener(playerFlow)
         holder.addListener(outputController)
@@ -99,6 +109,11 @@ class PlayerView @JvmOverloads constructor(
         holder.addListener(gestureController)
         holder.addListener(skipsController)
         holder.addListener(errorController)
+
+        binding.mediaActionPip.setOnClickListener {
+            onPipClick?.invoke()
+        }
+
 
         mediaButtonsController.onAnyTap = {
             uiVisbilityController.showMain()
@@ -191,5 +206,14 @@ class PlayerView @JvmOverloads constructor(
 
     fun setSpeed(speed: Float) {
         playerFlow.setSpeed(speed)
+    }
+
+    fun setPipVisible(state: Boolean) {
+        binding.mediaActionPip.isVisible = state
+    }
+
+    fun setPipActive(state: Boolean) {
+        outputController.updatePip(state)
+        uiVisbilityController.updatePip(state)
     }
 }

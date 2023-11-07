@@ -18,5 +18,5 @@ internal fun VideoSize.toState(): VideoSizeState {
     } else {
         width * pixelWidthHeightRatio / height
     }
-    return VideoSizeState(width, height, videoAspectRatio)
+    return VideoSizeState((width * pixelWidthHeightRatio).toInt(), height, videoAspectRatio)
 }

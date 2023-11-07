@@ -5,11 +5,13 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.Rational
 import android.view.WindowManager
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cronet.CronetDataSource
@@ -22,6 +24,8 @@ import androidx.media3.exoplayer.source.LoadEventInfo
 import androidx.media3.exoplayer.source.MediaLoadData
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.gms.net.CronetProviderInstaller
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import okhttp3.OkHttpClient
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetProvider
@@ -34,10 +38,10 @@ private class PlayerHolder {
 
     fun init(context: Context) {
         CronetProviderInstaller.installProvider(context).addOnCompleteListener {
-            Log.e("kekeke", "cronet success")
+            Log.e("lololo", "cronet success")
         }
         CronetProvider.getAllProviders(context).forEach {
-            Log.e("kekeke", "cronet provider $it")
+            Log.e("lololo", "cronet provider $it")
         }
         val okHttpClient = OkHttpClient.Builder().build()
         val okHttpDataSourceFactory = OkHttpDataSource.Factory(okHttpClient).apply {
@@ -90,9 +94,31 @@ private class PlayerHolder {
 
 class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videoplayer) {
 
+    companion object {
+        private const val REMOTE_CONTROL_PLAY = 1
+        private const val REMOTE_CONTROL_PAUSE = 2
+        private const val REMOTE_CONTROL_PREV = 3
+        private const val REMOTE_CONTROL_NEXT = 4
+    }
+
+    private val playAction = PictureInPictureController.Action(
+        code = 1,
+        title = "Пуск",
+        icRes = R.drawable.ic_media_play_arrow_24
+    )
+
+    private val pauseAction = PictureInPictureController.Action(
+        code = 2,
+        title = "Пауза",
+        icRes = R.drawable.ic_media_pause_24
+    )
+
+
     private val binding by viewBinding<ActivityTestVideoplayerBinding>()
 
     private val player = PlayerHolder()
+
+    private val pipController = PictureInPictureController(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -111,6 +137,7 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
             }
         }
         player.init(this)
+        pipController.init()
         binding.playerView.setPlayer(player.getPlayer())
         player.getPlayer()?.addAnalyticsListener(object : AnalyticsListener {
             val times = mutableListOf<Long>()
@@ -139,7 +166,7 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
                 }.orEmpty()
                 hostCounter[frontHost] = hostCounter.getOrPut(frontHost) { 0 } + 1
                 Log.e(
-                    "lololo_loading",
+                    "lololo",
                     "loadEventInfo.loadDurationMs ${loadEventInfo.loadDurationMs}, average ${
                         times.average().toLong()
                     }, protocol ${protocol}, hostname $frontHost[${hostCounter.get(frontHost)}]"
@@ -159,6 +186,48 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
             Uri.parse("https://cache.libria.fun/videos/media/ts/9486/15/480/8a6fb82096b5874a120c6d84b503996a.m3u8")
         binding.playerView.prepare(uri)
         //binding.playerView.play()
+
+
+        binding.playerView.outputState.onEach { videoOutputState ->
+            val aspectRatio = videoOutputState.videoSize.let {
+                Rational(it.width, it.height)
+            }
+
+            //Log.e("kekeke", "outputState ${aspectRatio.toFloat()}, ${videoOutputState.videoSize.aspectRatio}, $videoOutputState")
+            pipController.updateParams {
+                it.copy(
+                    sourceHintRect = videoOutputState.hintRect,
+                    aspectRatio = aspectRatio
+                )
+            }
+        }.launchIn(lifecycleScope)
+
+        binding.playerView.playerState.onEach { playerState ->
+            val actions = buildList {
+                if (playerState.playWhenReady && playerState.isPlaying) {
+                    add(pauseAction)
+                } else {
+                    add(playAction)
+                }
+            }
+            pipController.updateParams {
+                it.copy(actions = actions)
+            }
+        }.launchIn(lifecycleScope)
+
+        pipController.state.onEach {
+            binding.playerView.setPipVisible(it.supports)
+            binding.playerView.setPipActive(it.active)
+        }.launchIn(lifecycleScope)
+        binding.playerView.onPipClick = {
+            pipController.enter()
+        }
+        pipController.actionsListener = {
+            when (it) {
+                playAction -> binding.playerView.play()
+                pauseAction -> binding.playerView.pause()
+            }
+        }
     }
 
     override fun onDestroy() {
