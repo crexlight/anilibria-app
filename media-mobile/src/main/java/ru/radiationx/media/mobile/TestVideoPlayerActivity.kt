@@ -120,6 +120,8 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
 
     private val pipController = PictureInPictureController(this)
 
+    private val fullScreenController = FullScreenController(this)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
@@ -138,6 +140,7 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
         }
         player.init(this)
         pipController.init()
+        fullScreenController.init()
         binding.playerView.setPlayer(player.getPlayer())
         player.getPlayer()?.addAnalyticsListener(object : AnalyticsListener {
             val times = mutableListOf<Long>()
@@ -219,15 +222,29 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
             binding.playerView.setPipVisible(it.supports)
             binding.playerView.setPipActive(it.active)
         }.launchIn(lifecycleScope)
+
         binding.playerView.onPipClick = {
             pipController.enter()
         }
+
+
         pipController.actionsListener = {
             when (it) {
                 playAction -> binding.playerView.play()
                 pauseAction -> binding.playerView.pause()
             }
         }
+
+        fullScreenController.setFullscreen(true)
+        fullScreenController.state.onEach {
+            binding.playerView.setFullscreenVisible(it.available)
+            binding.playerView.setFullscreenActive(it.actualFullScreen)
+        }.launchIn(lifecycleScope)
+
+        binding.playerView.onFullscreenClick = {
+            fullScreenController.toggleFullscreen()
+        }
+
     }
 
     override fun onDestroy() {

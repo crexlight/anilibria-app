@@ -28,6 +28,7 @@ import ru.radiationx.media.mobile.controllers.UiVisbilityController
 import ru.radiationx.media.mobile.controllers.gesture.GestureController
 import ru.radiationx.media.mobile.databinding.ViewPlayerBinding
 import ru.radiationx.media.mobile.holder.RootPlayerHolder
+import ru.radiationx.shared.ktx.android.setCompatDrawable
 
 class PlayerView @JvmOverloads constructor(
     context: Context,
@@ -98,6 +99,7 @@ class PlayerView @JvmOverloads constructor(
     var onNextClick: (() -> Unit)? = null
     var onPipClick: (() -> Unit)? = null
     var onSettingsClick: (() -> Unit)? = null
+    var onFullscreenClick: (() -> Unit)? = null
 
 
     init {
@@ -113,7 +115,9 @@ class PlayerView @JvmOverloads constructor(
         binding.mediaActionPip.setOnClickListener {
             onPipClick?.invoke()
         }
-
+        binding.mediaActionFullscreen.setOnClickListener {
+            onFullscreenClick?.invoke()
+        }
 
         mediaButtonsController.onAnyTap = {
             uiVisbilityController.showMain()
@@ -215,5 +219,18 @@ class PlayerView @JvmOverloads constructor(
     fun setPipActive(state: Boolean) {
         outputController.updatePip(state)
         uiVisbilityController.updatePip(state)
+    }
+
+    fun setFullscreenVisible(state: Boolean) {
+        binding.mediaActionFullscreen.isVisible = state
+    }
+
+    fun setFullscreenActive(state: Boolean) {
+        val icRes = if (state) {
+            R.drawable.ic_media_fullscreen_exit_24
+        } else {
+            R.drawable.ic_media_fullscreen_24
+        }
+        binding.mediaActionFullscreen.setCompatDrawable(icRes)
     }
 }

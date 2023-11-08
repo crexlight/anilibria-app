@@ -230,14 +230,6 @@
                         app:tint="?colorOnSurface" />
 
                     <androidx.appcompat.widget.AppCompatImageButton
-                        android:id="@+id/mediaActionSettings"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="?actionBarItemBackground"
-                        app:srcCompat="@drawable/ic_media_settings_24"
-                        app:tint="?colorOnSurface" />
-
-                    <androidx.appcompat.widget.AppCompatImageButton
                         android:id="@+id/mediaActionScale"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
@@ -246,6 +238,15 @@
                         app:tint="?colorOnSurface" />
 
                     <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/mediaActionSettings"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?actionBarItemBackground"
+                        app:srcCompat="@drawable/ic_media_settings_24"
+                        app:tint="?colorOnSurface" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/mediaActionFullscreen"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:background="?actionBarItemBackground"
