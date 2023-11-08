@@ -137,6 +137,19 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
 
         <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/mediaErrorInPip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_media_floating_container"
+            android:padding="12dp"
+            android:text="Ошибка"
+            android:textColor="?colorOnSurface"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/mediaSeekerTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

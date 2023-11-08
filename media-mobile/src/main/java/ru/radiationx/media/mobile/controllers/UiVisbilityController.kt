@@ -64,6 +64,7 @@ internal class UiVisbilityController(
                 loadingVisible = playerState.isBlockingLoading,
                 skipVisible = !hasPip && internalState.skip && !internalState.liveScale,
                 errorVisible = !hasPip && !seekerVisible && hasError,
+                errorInPipVisible = hasPip && hasError,
                 liveScaleVisible = !hasPip && internalState.liveScale,
                 needsTransition = !hasPip
             )
@@ -82,6 +83,7 @@ internal class UiVisbilityController(
             binding.mediaScrim.isVisible = it.mainVisible
             binding.mediaSkipContainer.isVisible = it.skipVisible
             binding.mediaErrorContainer.isVisible = it.errorVisible
+            binding.mediaErrorInPip.isVisible = it.errorInPipVisible
             binding.mediaScaleStroke.isVisible = it.liveScaleVisible
         }.launchIn(coroutineScope)
     }
@@ -158,6 +160,7 @@ internal class UiVisbilityController(
         val loadingVisible: Boolean = false,
         val skipVisible: Boolean = false,
         val errorVisible: Boolean = false,
+        val errorInPipVisible: Boolean = false,
         val liveScaleVisible: Boolean = false,
         val needsTransition: Boolean = true,
     )
