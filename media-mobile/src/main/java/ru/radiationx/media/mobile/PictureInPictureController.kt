@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.graphics.drawable.Icon
 import android.os.Build
+import android.util.Log
 import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
@@ -22,8 +23,12 @@ import androidx.core.content.getSystemService
 import androidx.core.util.Consumer
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import ru.radiationx.shared.ktx.android.immutableFlag
 import timber.log.Timber
@@ -48,13 +53,13 @@ class PictureInPictureController(
                 return
             }
             val extraCode = intent.getIntExtra(EXTRA_REMOTE_CONTROL, Int.MIN_VALUE)
-            currentParamsState.actions.find { it.code == extraCode }?.also { action ->
+            _paramsState.value.actions.find { it.code == extraCode }?.also { action ->
                 actionsListener?.invoke(action)
             }
         }
     }
 
-    private var currentParamsState = ParamsState()
+    private val _paramsState = MutableStateFlow(ParamsState())
 
     private var _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
@@ -87,12 +92,20 @@ class PictureInPictureController(
                 unregisterActionsReceiver()
             }
         })
+
+        _paramsState.onEach { paramsState ->
+            _state.update {
+                it.copy(isValidParams = paramsState.isValid)
+            }
+            setParams(paramsState)
+        }.launchIn(activity.lifecycleScope)
     }
 
     fun enter() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _state.value.supports) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _state.value.canEnter) {
             try {
-                val result = activity.enterPictureInPictureMode(currentParamsState.toParams())
+                val params = _paramsState.value.toParams() ?: return
+                val result = activity.enterPictureInPictureMode(params)
                 _state.update { it.copy(active = result) }
             } catch (ex: Exception) {
                 Timber.e(ex)
@@ -101,10 +114,15 @@ class PictureInPictureController(
     }
 
     fun updateParams(block: (ParamsState) -> ParamsState) {
-        currentParamsState = block.invoke(currentParamsState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && _state.value.supports) {
+        _paramsState.update(block)
+    }
+
+    private fun setParams(paramsState: ParamsState) {
+        Log.e("kekeke", "setParams ${paramsState.isRectValid}, ${paramsState.isAspectRatioValid}, $paramsState")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
-                activity.setPictureInPictureParams(currentParamsState.toParams())
+                val params = paramsState.toParams() ?: return
+                activity.setPictureInPictureParams(params)
             } catch (ex: Exception) {
                 Timber.e(ex)
             }
@@ -135,7 +153,16 @@ class PictureInPictureController(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun ParamsState.toParams(): PictureInPictureParams {
+    private fun ParamsState.toParams(): PictureInPictureParams? {
+        if (!isRectValid) {
+            Timber.tag("ParamsStateValidation").d("invalid source hint rect $sourceHintRect")
+            return null
+        }
+        if (!isAspectRatioValid) {
+            Timber.tag("ParamsStateValidation").d("invalid aspect ratio $aspectRatio")
+            return null
+        }
+
         val builder = PictureInPictureParams.Builder()
         val remoteActions = actions
             .takeLast(activity.maxNumPictureInPictureActions)
@@ -191,13 +218,27 @@ class PictureInPictureController(
     data class State(
         val supports: Boolean = false,
         val active: Boolean = false,
-    )
+        val isValidParams: Boolean = false,
+    ) {
+        val canEnter = supports && isValidParams
+    }
 
     data class ParamsState(
         val sourceHintRect: Rect = Rect(),
         val aspectRatio: Rational = Rational(0, 0),
         val actions: List<Action> = emptyList(),
-    )
+    ) {
+
+        val isRectValid = sourceHintRect.let {
+            it.width() != 0 && it.width() != 0
+        }
+
+        val isAspectRatioValid = aspectRatio.let {
+            !it.isNaN && !it.isInfinite && !it.isZero
+        }
+
+        val isValid = isRectValid && isAspectRatioValid
+    }
 
     data class Action(
         val code: Int,

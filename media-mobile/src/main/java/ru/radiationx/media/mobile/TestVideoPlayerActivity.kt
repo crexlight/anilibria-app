@@ -219,7 +219,7 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
         }.launchIn(lifecycleScope)
 
         pipController.state.onEach {
-            binding.playerView.setPipVisible(it.supports)
+            binding.playerView.setPipVisible(it.canEnter)
             binding.playerView.setPipActive(it.active)
         }.launchIn(lifecycleScope)
 
