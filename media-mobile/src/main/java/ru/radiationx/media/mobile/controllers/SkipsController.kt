@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import ru.radiationx.media.mobile.PlayerFlow
 import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.models.TimelineSkip
 
 internal class SkipsController(
     private val coroutineScope: CoroutineScope,
@@ -19,7 +20,7 @@ internal class SkipsController(
 
     private val _skipsData = MutableStateFlow(SkipsData())
 
-    private val _currentSkip = MutableStateFlow<Skip?>(null)
+    private val _currentSkip = MutableStateFlow<TimelineSkip?>(null)
     val currentSkip = _currentSkip.asStateFlow()
 
     init {
@@ -44,11 +45,11 @@ internal class SkipsController(
         }.launchIn(coroutineScope)
     }
 
-    fun setSkips(skips: List<Skip>) {
+    fun setSkips(skips: List<TimelineSkip>) {
         _skipsData.value = SkipsData(skips)
     }
 
-    private fun checkSkip(skip: Skip, skipped: Set<Skip>, position: Long): Boolean {
+    private fun checkSkip(skip: TimelineSkip, skipped: Set<TimelineSkip>, position: Long): Boolean {
         return skip !in skipped && (position in skip.start..skip.end)
     }
 
@@ -59,13 +60,8 @@ internal class SkipsController(
         }
     }
 
-    data class Skip(
-        val start: Long,
-        val end: Long,
-    )
-
     private data class SkipsData(
-        val skips: List<Skip> = emptyList(),
-        val skipped: Set<Skip> = emptySet(),
+        val skips: List<TimelineSkip> = emptyList(),
+        val skipped: Set<TimelineSkip> = emptySet(),
     )
 }

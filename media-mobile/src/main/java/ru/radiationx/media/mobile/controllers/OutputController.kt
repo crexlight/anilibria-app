@@ -3,8 +3,6 @@ package ru.radiationx.media.mobile.controllers
 import android.graphics.Rect
 import android.view.TextureView
 import android.widget.FrameLayout
-import android.widget.ImageButton
-import androidx.core.view.isVisible
 import androidx.media3.common.Player
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +18,6 @@ import ru.radiationx.media.mobile.R
 import ru.radiationx.media.mobile.holder.PlayerAttachListener
 import ru.radiationx.media.mobile.models.VideoOutputState
 import ru.radiationx.media.mobile.views.AspectRatioFrameLayout
-import ru.radiationx.shared.ktx.android.setCompatDrawable
 
 internal class OutputController(
     private val coroutineScope: CoroutineScope,
@@ -28,10 +25,10 @@ internal class OutputController(
     private val mediaTextureView: TextureView,
     private val mediaAspectRatio: AspectRatioFrameLayout,
     private val scaleContainer: FrameLayout,
-    private val scaleButton: ImageButton,
 ) : PlayerAttachListener {
 
     private val _state = MutableStateFlow(ScaleState())
+    val state = _state.asStateFlow()
 
     private val _outputState = MutableStateFlow(VideoOutputState())
     val outputState = _outputState.asStateFlow()
@@ -54,9 +51,6 @@ internal class OutputController(
         scaleContainer.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             _state.update { it.copy(fillScale = getFillScale()) }
         }
-        scaleButton.setOnClickListener {
-            _state.update { it.copy(targetFill = !it.targetFill) }
-        }
 
         _state.filter { !it.isLiveScale }.onEach { state ->
             val isFillScale = state.canApply && state.targetFill
@@ -71,8 +65,6 @@ internal class OutputController(
                 R.drawable.ic_media_settings_overscan_24
             }
             mediaAspectRatio.animate().scaleX(scale).scaleY(scale).start()
-            scaleButton.isVisible = state.canApply
-            scaleButton.setCompatDrawable(icRes)
         }.launchIn(coroutineScope)
     }
 
@@ -105,6 +97,10 @@ internal class OutputController(
         }
         mediaAspectRatio.scaleX = coercedScale
         mediaAspectRatio.scaleY = coercedScale
+    }
+
+    fun toggleFill() {
+        _state.update { it.copy(targetFill = !it.targetFill) }
     }
 
     fun updatePip(active: Boolean) {

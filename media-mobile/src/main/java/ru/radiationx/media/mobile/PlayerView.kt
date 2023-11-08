@@ -3,12 +3,10 @@ package ru.radiationx.media.mobile
 import android.content.Context
 import android.net.Uri
 import android.util.AttributeSet
-import android.util.Log
 import android.widget.FrameLayout
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
 import androidx.core.view.updatePadding
@@ -20,6 +18,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import ru.radiationx.media.mobile.controllers.ErrorController
+import ru.radiationx.media.mobile.controllers.MediaActionsController
 import ru.radiationx.media.mobile.controllers.MediaButtonsController
 import ru.radiationx.media.mobile.controllers.OutputController
 import ru.radiationx.media.mobile.controllers.SkipsController
@@ -28,7 +27,7 @@ import ru.radiationx.media.mobile.controllers.UiVisbilityController
 import ru.radiationx.media.mobile.controllers.gesture.GestureController
 import ru.radiationx.media.mobile.databinding.ViewPlayerBinding
 import ru.radiationx.media.mobile.holder.RootPlayerHolder
-import ru.radiationx.shared.ktx.android.setCompatDrawable
+import ru.radiationx.media.mobile.models.TimelineSkip
 
 class PlayerView @JvmOverloads constructor(
     context: Context,
@@ -47,7 +46,6 @@ class PlayerView @JvmOverloads constructor(
         mediaTextureView = binding.mediaTextureView,
         mediaAspectRatio = binding.mediaAspectRatio,
         scaleContainer = binding.mediaScaleContainer,
-        scaleButton = binding.mediaActionScale
     )
 
     private val uiVisbilityController = UiVisbilityController(
@@ -62,6 +60,15 @@ class PlayerView @JvmOverloads constructor(
         mediaButtonPrev = binding.mediaButtonPrev,
         mediaButtonPlay = binding.mediaButtonPlay,
         mediaButtonNext = binding.mediaButtonNext
+    )
+
+    private val mediaActionsController = MediaActionsController(
+        coroutineScope = coroutineScope,
+        playerFlow = playerFlow,
+        mediaActionPip = binding.mediaActionPip,
+        mediaActionScale = binding.mediaActionScale,
+        mediaActionSettings = binding.mediaActionSettings,
+        mediaActionFullscreen = binding.mediaActionFullscreen,
     )
 
     private val timelineController = TimelineController(
@@ -92,8 +99,10 @@ class PlayerView @JvmOverloads constructor(
         errorButtonAction = binding.mediaErrorAction
     )
 
-    val playerState = playerFlow.playerState
     val outputState = outputController.outputState
+    val playerState = playerFlow.playerState
+    val preparedFlow = playerFlow.preparedFlow
+    val completedFlow = playerFlow.completedFlow
 
     var onPrevClick: (() -> Unit)? = null
     var onNextClick: (() -> Unit)? = null
@@ -101,8 +110,64 @@ class PlayerView @JvmOverloads constructor(
     var onSettingsClick: (() -> Unit)? = null
     var onFullscreenClick: (() -> Unit)? = null
 
-
     init {
+        attachControllers()
+        initOutput()
+        initTimeLine()
+        initGestures()
+        initSkips()
+        initMediaActions()
+        initMediaButtons()
+        initInsets()
+    }
+
+    fun setPlayer(player: Player?) {
+        holder.setPlayer(player)
+    }
+
+    fun prepare(uri: Uri, skips: List<TimelineSkip>) {
+        playerFlow.prepare(uri)
+        skipsController.setSkips(skips)
+    }
+
+    fun play() {
+        playerFlow.play()
+    }
+
+    fun pause() {
+        playerFlow.pause()
+    }
+
+    fun setSpeed(speed: Float) {
+        playerFlow.setSpeed(speed)
+    }
+
+    fun setHasPrev(state: Boolean) {
+        mediaButtonsController.setHasPrev(state)
+    }
+
+    fun setHasNext(state: Boolean) {
+        mediaButtonsController.setHasNext(state)
+    }
+
+    fun setPipVisible(state: Boolean) {
+        mediaActionsController.setPipVisible(state)
+    }
+
+    fun setPipActive(state: Boolean) {
+        outputController.updatePip(state)
+        uiVisbilityController.updatePip(state)
+    }
+
+    fun setFullscreenVisible(state: Boolean) {
+        mediaActionsController.setFullscreenVisible(state)
+    }
+
+    fun setFullscreenActive(state: Boolean) {
+        mediaActionsController.setFullscreenActive(state)
+    }
+
+    private fun attachControllers() {
         holder.addListener(playerFlow)
         holder.addListener(outputController)
         holder.addListener(uiVisbilityController)
@@ -111,18 +176,45 @@ class PlayerView @JvmOverloads constructor(
         holder.addListener(gestureController)
         holder.addListener(skipsController)
         holder.addListener(errorController)
+    }
 
-        binding.mediaActionPip.setOnClickListener {
+    private fun initMediaActions() {
+        mediaActionsController.onAnyTap = {
+            uiVisbilityController.showMain()
+        }
+
+        mediaActionsController.onPipClick = {
             onPipClick?.invoke()
         }
-        binding.mediaActionFullscreen.setOnClickListener {
-            onFullscreenClick?.invoke()
+
+        mediaActionsController.onScaleClick = {
+            outputController.toggleFill()
         }
 
+        mediaActionsController.onSettingsClick = {
+            onSettingsClick?.invoke()
+        }
+
+        mediaActionsController.onFullscreenClick = {
+            onFullscreenClick?.invoke()
+        }
+    }
+
+    private fun initMediaButtons() {
         mediaButtonsController.onAnyTap = {
             uiVisbilityController.showMain()
         }
 
+        mediaButtonsController.onPrevClick = {
+            onPrevClick?.invoke()
+        }
+
+        mediaButtonsController.onNextClick = {
+            onNextClick?.invoke()
+        }
+    }
+
+    private fun initGestures() {
         gestureController.singleTapListener = {
             uiVisbilityController.toggleMainVisible()
         }
@@ -139,33 +231,28 @@ class PlayerView @JvmOverloads constructor(
             outputController.setLiveScale(it)
             uiVisbilityController.updateLiveScale(it != null)
         }.launchIn(coroutineScope)
+    }
 
+    private fun initTimeLine() {
         timelineController.seekState.onEach {
             uiVisbilityController.updateSlider(it != null)
         }.launchIn(coroutineScope)
+    }
 
+    private fun initSkips() {
         skipsController.currentSkip.onEach {
             uiVisbilityController.updateSkip(it != null)
         }.launchIn(coroutineScope)
+    }
 
-        playerFlow.preparedFlow.onEach {
-            Log.d("kekeke", "preparedFlow $it")
+    private fun initOutput() {
+        outputController.state.onEach {
+            mediaActionsController.setScaleVisible(it.canApply)
+            mediaActionsController.setScaleFill(it.targetFill)
         }.launchIn(coroutineScope)
+    }
 
-        playerFlow.completedFlow.onEach {
-            Log.d("kekeke", "completedFlow $it")
-        }.launchIn(coroutineScope)
-
-        playerFlow.playerState.onEach {
-            Log.d("kekeke", "playerState $it")
-        }.launchIn(coroutineScope)
-
-        skipsController.setSkips(
-            listOf(
-                SkipsController.Skip(2000, 100000)
-            )
-        )
-
+    private fun initInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val barInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
             val cutoutInsets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
@@ -190,47 +277,5 @@ class PlayerView @JvmOverloads constructor(
 
             insets
         }
-    }
-
-    fun setPlayer(player: Player?) {
-        holder.setPlayer(player)
-    }
-
-    fun prepare(uri: Uri) {
-        playerFlow.prepare(uri)
-    }
-
-    fun play() {
-        playerFlow.play()
-    }
-
-    fun pause() {
-        playerFlow.pause()
-    }
-
-    fun setSpeed(speed: Float) {
-        playerFlow.setSpeed(speed)
-    }
-
-    fun setPipVisible(state: Boolean) {
-        binding.mediaActionPip.isVisible = state
-    }
-
-    fun setPipActive(state: Boolean) {
-        outputController.updatePip(state)
-        uiVisbilityController.updatePip(state)
-    }
-
-    fun setFullscreenVisible(state: Boolean) {
-        binding.mediaActionFullscreen.isVisible = state
-    }
-
-    fun setFullscreenActive(state: Boolean) {
-        val icRes = if (state) {
-            R.drawable.ic_media_fullscreen_exit_24
-        } else {
-            R.drawable.ic_media_fullscreen_24
-        }
-        binding.mediaActionFullscreen.setCompatDrawable(icRes)
     }
 }

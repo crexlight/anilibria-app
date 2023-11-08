@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.onEach
 import okhttp3.OkHttpClient
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetProvider
+import ru.radiationx.media.mobile.models.TimelineSkip
 import ru.radiationx.media.mobile.databinding.ActivityTestVideoplayerBinding
 import java.util.concurrent.Executors
 
@@ -187,7 +188,12 @@ class TestVideoPlayerActivity : FragmentActivity(R.layout.activity_test_videopla
 
         val uri =
             Uri.parse("https://cache.libria.fun/videos/media/ts/9486/15/480/8a6fb82096b5874a120c6d84b503996a.m3u8")
-        binding.playerView.prepare(uri)
+        binding.playerView.prepare(
+            uri,
+            listOf(
+                TimelineSkip(2000, 100000)
+            )
+        )
         //binding.playerView.play()
 
 

@@ -20,6 +20,9 @@ internal class MediaButtonsController(
 
     var onAnyTap: (() -> Unit)? = null
 
+    var onPrevClick: (() -> Unit)? = null
+    var onNextClick: (() -> Unit)? = null
+
     init {
         mediaButtonPrev.setOnClickListener {
             onAnyTap?.invoke()
