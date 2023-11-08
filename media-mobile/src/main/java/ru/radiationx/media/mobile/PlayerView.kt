@@ -15,7 +15,10 @@ import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import ru.radiationx.media.mobile.controllers.ErrorController
 import ru.radiationx.media.mobile.controllers.MediaActionsController
@@ -99,6 +102,9 @@ class PlayerView @JvmOverloads constructor(
         errorButtonAction = binding.mediaErrorAction
     )
 
+    private val _uiShowState = MutableStateFlow(false)
+    val uiShowState = _uiShowState.asStateFlow()
+
     val outputState = outputController.outputState
     val playerState = playerFlow.playerState
     val preparedFlow = playerFlow.preparedFlow
@@ -112,6 +118,7 @@ class PlayerView @JvmOverloads constructor(
 
     init {
         attachControllers()
+        initUi()
         initOutput()
         initTimeLine()
         initGestures()
@@ -176,6 +183,12 @@ class PlayerView @JvmOverloads constructor(
         holder.addListener(gestureController)
         holder.addListener(skipsController)
         holder.addListener(errorController)
+    }
+
+    private fun initUi() {
+        uiVisbilityController.state.map { it.mainVisible }.onEach {
+            _uiShowState.value = it
+        }.launchIn(coroutineScope)
     }
 
     private fun initMediaActions() {

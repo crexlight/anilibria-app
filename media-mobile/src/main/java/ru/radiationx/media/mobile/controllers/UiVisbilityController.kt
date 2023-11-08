@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -31,6 +32,7 @@ internal class UiVisbilityController(
     private val _internalState = MutableStateFlow(InternalState())
 
     private val _state = MutableStateFlow(UiVisibilityState())
+    val state = _state.asStateFlow()
 
     init {
         val targetViews = listOf(
@@ -153,7 +155,7 @@ internal class UiVisbilityController(
         val pip: Boolean = false,
     )
 
-    private data class UiVisibilityState(
+    internal data class UiVisibilityState(
         val mainVisible: Boolean = false,
         val controlsVisible: Boolean = false,
         val seekerVisible: Boolean = false,
