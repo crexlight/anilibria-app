@@ -46,7 +46,6 @@ import ru.radiationx.anilibria.utils.messages.SystemMessenger
 import ru.radiationx.data.analytics.AnalyticsConstants
 import ru.radiationx.data.analytics.features.ActivityLaunchAnalytics
 import ru.radiationx.data.entity.common.AuthState
-import ru.radiationx.media.mobile.TestVideoPlayerActivity
 import ru.radiationx.quill.get
 import ru.radiationx.quill.inject
 import ru.radiationx.quill.viewModel
@@ -105,19 +104,12 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
 
     private var createdWithSavedState = false
 
-    private val testVideoPlayer = true
-
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.DayNightAppTheme_NoActionBar)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         if (isLaunchedFromHistory()) {
             get<ActivityLaunchAnalytics>().launchFromHistory(this, savedInstanceState)
-        }
-        if (testVideoPlayer) {
-            startActivity(Intent(this, TestVideoPlayerActivity::class.java))
-            finish()
-            return
         }
         createdWithSavedState = savedInstanceState != null
 
@@ -172,10 +164,7 @@ class MainActivity : BaseActivity(R.layout.activity_main) {
 
     override fun onDestroy() {
         super.onDestroy()
-        if(!testVideoPlayer){
-            binding.tabsRecycler.adapter = null
-
-        }
+        binding.tabsRecycler.adapter = null
     }
 
 

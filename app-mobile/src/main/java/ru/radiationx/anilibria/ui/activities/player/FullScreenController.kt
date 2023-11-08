@@ -1,4 +1,4 @@
-package ru.radiationx.media.mobile
+package ru.radiationx.anilibria.ui.activities.player
 
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration

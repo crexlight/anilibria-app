@@ -1,4 +1,4 @@
-package ru.radiationx.media.mobile
+package ru.radiationx.anilibria.ui.activities.player
 
 import android.app.AppOpsManager
 import android.app.PendingIntent
@@ -12,7 +12,6 @@ import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.graphics.drawable.Icon
 import android.os.Build
-import android.util.Log
 import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.annotation.DrawableRes
@@ -26,7 +25,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -118,7 +116,6 @@ class PictureInPictureController(
     }
 
     private fun setParams(paramsState: ParamsState) {
-        Log.e("kekeke", "setParams ${paramsState.isRectValid}, ${paramsState.isAspectRatioValid}, $paramsState")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
                 val params = paramsState.toParams() ?: return

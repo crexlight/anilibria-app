@@ -31,11 +31,6 @@ dependencies {
     implementation "com.google.android.material:material:$material_version"
 
     implementation "androidx.media3:media3-exoplayer:$androidx_media3_version"
-    implementation "androidx.media3:media3-exoplayer-hls:$androidx_media3_version"
-    implementation "androidx.media3:media3-ui:$androidx_media3_version"
-    implementation "androidx.media3:media3-datasource-okhttp:$androidx_media3_version"
-    implementation "androidx.media3:media3-datasource-cronet:$androidx_media3_version"
-    //implementation 'org.chromium.net:cronet-embedded:113.5672.61'
 
     implementation "com.github.kirich1409:viewbindingpropertydelegate:$viewbindingdelegate_version"
 }
