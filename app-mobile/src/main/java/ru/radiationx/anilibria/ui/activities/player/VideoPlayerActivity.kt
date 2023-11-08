@@ -8,9 +8,13 @@ import android.os.Bundle
 import android.util.Log
 import android.util.Rational
 import android.view.WindowManager
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
@@ -22,6 +26,9 @@ import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.LoadEventInfo
 import androidx.media3.exoplayer.source.MediaLoadData
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionManager
+import androidx.transition.TransitionSet
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.gms.net.CronetProviderInstaller
 import kotlinx.coroutines.flow.launchIn
@@ -39,6 +46,7 @@ import ru.radiationx.media.mobile.models.TimelineSkip
 import ru.radiationx.quill.inject
 import ru.radiationx.shared.ktx.android.getExtraNotNull
 import java.util.concurrent.Executors
+import kotlin.math.max
 
 
 private class PlayerHolder {
@@ -260,7 +268,40 @@ class VideoPlayerActivity : BaseActivity(R.layout.activity_videoplayer) {
             val skips = listOfNotNull(episode.skips?.opening, episode.skips?.ending).map {
                 TimelineSkip(it.start, it.end)
             }
+            binding.playerToolbarTitle.text = release.title
+            binding.playerToolbarSubtitle.text = episode.title
             binding.playerView.prepare(uri, skips)
+        }
+
+        binding.playerToolbarBack.setOnClickListener {
+            finish()
+        }
+        val transition = AutoTransition().apply {
+            ordering = TransitionSet.ORDERING_TOGETHER
+            duration = 200
+            addTarget(binding.playerToolbar)
+        }
+        binding.playerView.uiShowState.onEach {
+            TransitionManager.beginDelayedTransition(binding.root, transition)
+            binding.playerToolbar.isVisible = it
+        }.launchIn(lifecycleScope)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val barInsets = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            val cutoutInsets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+
+            val toolbarInsets = Insets.max(barInsets, cutoutInsets)
+            binding.playerToolbar.updatePadding(
+                left = toolbarInsets.left,
+                top = toolbarInsets.top,
+                right = toolbarInsets.right,
+                bottom = toolbarInsets.bottom
+            )
+            binding.playerToolbarTitleContainer.updatePadding(
+                left = toolbarInsets.right,
+                right = toolbarInsets.left
+            )
+            insets
         }
     }
 
