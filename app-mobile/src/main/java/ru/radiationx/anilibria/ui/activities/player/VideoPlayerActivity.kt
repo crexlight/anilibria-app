@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cronet.CronetDataSource
@@ -26,6 +27,7 @@ import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.LoadEventInfo
 import androidx.media3.exoplayer.source.MediaLoadData
+import androidx.media3.session.MediaSession
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
@@ -40,17 +42,19 @@ import org.chromium.net.CronetProvider
 import ru.radiationx.anilibria.R
 import ru.radiationx.anilibria.databinding.ActivityVideoplayerBinding
 import ru.radiationx.anilibria.ui.activities.BaseActivity
+import ru.radiationx.data.entity.domain.release.Episode
 import ru.radiationx.data.entity.domain.types.EpisodeId
 import ru.radiationx.data.interactors.ReleaseInteractor
+import ru.radiationx.media.mobile.models.PlaylistItem
 import ru.radiationx.media.mobile.models.TimelineSkip
 import ru.radiationx.quill.inject
 import ru.radiationx.shared.ktx.android.getExtraNotNull
 import java.util.concurrent.Executors
-import kotlin.math.max
 
 
 private class PlayerHolder {
     private var _player: ExoPlayer? = null
+    private var _mediaSession: MediaSession? = null
 
     fun init(context: Context) {
         CronetProviderInstaller.installProvider(context).addOnCompleteListener {
@@ -93,12 +97,18 @@ private class PlayerHolder {
             setDataSourceFactory(dataSourceFactory)
         }
 
-        _player = ExoPlayer.Builder(context.applicationContext)
+        val player = ExoPlayer.Builder(context.applicationContext)
             .setMediaSourceFactory(mediaSourceFactory)
             .build()
+        val mediaSession = MediaSession.Builder(context, player).build()
+
+        _mediaSession = mediaSession
+        _player = player
     }
 
     fun destroy() {
+        _mediaSession?.release()
+        _mediaSession = null
         _player?.release()
         _player = null
     }
@@ -263,15 +273,29 @@ class VideoPlayerActivity : BaseActivity(R.layout.activity_videoplayer) {
         val episodeId = getExtraNotNull<EpisodeId>(ARG_EPISODE_ID)
         lifecycleScope.launch {
             val release = releaseInteractor.getFull(episodeId.releaseId)!!
-            val episode = release.episodes.find { it.id == episodeId }!!
-            val uri = episode.let { it.urlHd ?: it.urlSd }!!.let { Uri.parse(it) }
-            val skips = listOfNotNull(episode.skips?.opening, episode.skips?.ending).map {
-                TimelineSkip(it.start, it.end)
-            }
             binding.playerToolbarTitle.text = release.title
-            binding.playerToolbarSubtitle.text = episode.title
-            binding.playerView.prepare(uri, skips)
+            //binding.playerView.prepare(uri, skips)
+            val episodes = release.episodes.asReversed()
+            val items = episodes.map { episode ->
+                val url = (episode.urlHd ?: episode.urlSd)!!
+                val mediaItem = MediaItem.Builder()
+                    .setUri(Uri.parse(url))
+                    .setTag(episode)
+                    .build()
+                val skips = listOfNotNull(episode.skips?.opening, episode.skips?.ending).map {
+                    TimelineSkip(it.start, it.end)
+                }
+                PlaylistItem(mediaItem, skips)
+            }
+            val index = episodes.indexOfFirst { it.id == episodeId }
+            binding.playerView.prepare(items, index)
         }
+
+        binding.playerView.playlistState.onEach {
+            val episode = (it.currentItem?.mediaItem?.localConfiguration?.tag as? Episode?)
+            binding.playerToolbarSubtitle.text = episode?.title
+        }.launchIn(lifecycleScope)
+
 
         binding.playerToolbarBack.setOnClickListener {
             finish()

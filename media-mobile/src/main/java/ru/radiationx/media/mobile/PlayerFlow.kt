@@ -1,6 +1,6 @@
 package ru.radiationx.media.mobile
 
-import android.net.Uri
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -15,10 +15,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.radiationx.media.mobile.holder.PlayerAttachListener
+import ru.radiationx.media.mobile.models.MediaItemTransition
 import ru.radiationx.media.mobile.models.PlaybackState
 import ru.radiationx.media.mobile.models.PlayerState
+import ru.radiationx.media.mobile.models.PlaylistItem
+import ru.radiationx.media.mobile.models.PlaylistState
 import ru.radiationx.media.mobile.models.TimelineState
 import ru.radiationx.media.mobile.models.asPlaybackState
+import ru.radiationx.media.mobile.models.asTransitionReason
 import ru.radiationx.media.mobile.models.toState
 
 class PlayerFlow(
@@ -26,6 +30,19 @@ class PlayerFlow(
 ) : PlayerAttachListener {
 
     private val playerListener = object : Player.Listener {
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            super.onMediaItemTransition(mediaItem, reason)
+            _playlistState.update { it.copy(currentItem = it.findByMediaItem(mediaItem)) }
+            coroutineScope.launch {
+                val transition = MediaItemTransition(mediaItem, reason.asTransitionReason())
+                _mediaItemTransitionFlow.emit(transition)
+            }
+        }
+
+        override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
+            super.onAvailableCommandsChanged(availableCommands)
+            _playerState.update { it.copy(commands = availableCommands.toState()) }
+        }
 
         override fun onPlayerErrorChanged(error: PlaybackException?) {
             super.onPlayerErrorChanged(error)
@@ -94,6 +111,9 @@ class PlayerFlow(
 
     private var timelineJob: Job? = null
 
+    private val _playlistState = MutableStateFlow(PlaylistState())
+    val playlistState = _playlistState.asStateFlow()
+
     private val _timelineState = MutableStateFlow(TimelineState())
     val timelineState = _timelineState.asStateFlow()
 
@@ -106,6 +126,9 @@ class PlayerFlow(
     private val _completedFlow = MutableSharedFlow<Unit>()
     val completedFlow = _completedFlow.asSharedFlow()
 
+    private val _mediaItemTransitionFlow = MutableSharedFlow<MediaItemTransition>()
+    val mediaItemTransitionFlow = _mediaItemTransitionFlow.asSharedFlow()
+
     override fun attachPlayer(player: Player) {
         _player = player
         _playerState.update {
@@ -114,7 +137,8 @@ class PlayerFlow(
                 isPlaying = player.isPlaying,
                 isLoading = player.isLoading,
                 playbackState = player.playbackState.asPlaybackState(),
-                videoSize = player.videoSize.toState()
+                videoSize = player.videoSize.toState(),
+                commands = player.availableCommands.toState()
             )
         }
         updateTimeline(player)
@@ -135,12 +159,22 @@ class PlayerFlow(
         _timelineState.value = TimelineState()
     }
 
-    fun prepare(uri: Uri) {
+    fun prepare(
+        playlist: List<PlaylistItem>,
+        startIndex: Int? = null,
+        startPosition: Long? = null,
+    ) {
         prepareNotified = false
         completedNotified = false
-        withPlayer {
-            it.setMediaItem(MediaItem.fromUri(uri))
-            it.prepare()
+        withPlayer { player ->
+            val currentItem = startIndex?.let { playlist[it] }
+            _playlistState.update { PlaylistState(items = playlist, currentItem = currentItem) }
+            player.setMediaItems(
+                playlist.map { it.mediaItem },
+                startIndex ?: C.INDEX_UNSET,
+                startPosition ?: C.TIME_UNSET
+            )
+            player.prepare()
         }
     }
 
@@ -154,6 +188,18 @@ class PlayerFlow(
     fun pause() {
         withPlayer {
             it.pause()
+        }
+    }
+
+    fun prev() {
+        withPlayer {
+            it.seekToPreviousMediaItem()
+        }
+    }
+
+    fun next() {
+        withPlayer {
+            it.seekToNextMediaItem()
         }
     }
 

@@ -3,6 +3,8 @@ package ru.radiationx.media.mobile
 import android.content.Context
 import android.net.Uri
 import android.util.AttributeSet
+import android.util.Log
+import android.view.KeyEvent
 import android.widget.FrameLayout
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -10,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
 import androidx.core.view.updatePadding
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.CoroutineScope
@@ -30,6 +33,7 @@ import ru.radiationx.media.mobile.controllers.UiVisbilityController
 import ru.radiationx.media.mobile.controllers.gesture.GestureController
 import ru.radiationx.media.mobile.databinding.ViewPlayerBinding
 import ru.radiationx.media.mobile.holder.RootPlayerHolder
+import ru.radiationx.media.mobile.models.PlaylistItem
 import ru.radiationx.media.mobile.models.TimelineSkip
 
 class PlayerView @JvmOverloads constructor(
@@ -107,11 +111,10 @@ class PlayerView @JvmOverloads constructor(
 
     val outputState = outputController.outputState
     val playerState = playerFlow.playerState
+    val playlistState = playerFlow.playlistState
     val preparedFlow = playerFlow.preparedFlow
     val completedFlow = playerFlow.completedFlow
 
-    var onPrevClick: (() -> Unit)? = null
-    var onNextClick: (() -> Unit)? = null
     var onPipClick: (() -> Unit)? = null
     var onSettingsClick: (() -> Unit)? = null
     var onFullscreenClick: (() -> Unit)? = null
@@ -132,9 +135,8 @@ class PlayerView @JvmOverloads constructor(
         holder.setPlayer(player)
     }
 
-    fun prepare(uri: Uri, skips: List<TimelineSkip>) {
-        playerFlow.prepare(uri)
-        skipsController.setSkips(skips)
+    fun prepare(playlist: List<PlaylistItem>, startIndex: Int? = null, startPosition: Long? = null) {
+        playerFlow.prepare(playlist, startIndex, startPosition)
     }
 
     fun play() {
@@ -147,14 +149,6 @@ class PlayerView @JvmOverloads constructor(
 
     fun setSpeed(speed: Float) {
         playerFlow.setSpeed(speed)
-    }
-
-    fun setHasPrev(state: Boolean) {
-        mediaButtonsController.setHasPrev(state)
-    }
-
-    fun setHasNext(state: Boolean) {
-        mediaButtonsController.setHasNext(state)
     }
 
     fun setPipVisible(state: Boolean) {
@@ -216,14 +210,6 @@ class PlayerView @JvmOverloads constructor(
     private fun initMediaButtons() {
         mediaButtonsController.onAnyTap = {
             uiVisbilityController.showMain()
-        }
-
-        mediaButtonsController.onPrevClick = {
-            onPrevClick?.invoke()
-        }
-
-        mediaButtonsController.onNextClick = {
-            onNextClick?.invoke()
         }
     }
 

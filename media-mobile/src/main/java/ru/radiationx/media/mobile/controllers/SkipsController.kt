@@ -5,7 +5,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import ru.radiationx.media.mobile.PlayerFlow
 import ru.radiationx.media.mobile.holder.PlayerAttachListener
@@ -43,10 +46,10 @@ internal class SkipsController(
             }
             _currentSkip.value = skip
         }.launchIn(coroutineScope)
-    }
 
-    fun setSkips(skips: List<TimelineSkip>) {
-        _skipsData.value = SkipsData(skips)
+        playerFlow.playlistState.map { it.currentItem }.distinctUntilChanged().onEach {
+            _skipsData.value = SkipsData(it?.skips.orEmpty())
+        }.launchIn(coroutineScope)
     }
 
     private fun checkSkip(skip: TimelineSkip, skipped: Set<TimelineSkip>, position: Long): Boolean {

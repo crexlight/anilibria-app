@@ -3,7 +3,9 @@ package ru.radiationx.media.mobile.controllers
 import android.widget.ImageButton
 import androidx.core.view.isInvisible
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import ru.radiationx.media.mobile.PlayerFlow
 import ru.radiationx.media.mobile.R
@@ -20,12 +22,10 @@ internal class MediaButtonsController(
 
     var onAnyTap: (() -> Unit)? = null
 
-    var onPrevClick: (() -> Unit)? = null
-    var onNextClick: (() -> Unit)? = null
-
     init {
         mediaButtonPrev.setOnClickListener {
             onAnyTap?.invoke()
+            playerFlow.prev()
         }
         mediaButtonPlay.setOnClickListener {
             onAnyTap?.invoke()
@@ -37,6 +37,7 @@ internal class MediaButtonsController(
         }
         mediaButtonNext.setOnClickListener {
             onAnyTap?.invoke()
+            playerFlow.next()
         }
         playerFlow.playerState.onEach {
             val icRes = if (it.playWhenReady && it.isPlaying) {
@@ -45,16 +46,13 @@ internal class MediaButtonsController(
                 R.drawable.ic_media_play_arrow_24
             }
             mediaButtonPlay.setCompatDrawable(icRes)
-            mediaButtonPlay.isInvisible = it.isBlockingLoading
+            mediaButtonPlay.isInvisible = it.isBlockingLoading || !it.commands.playPause
         }.launchIn(coroutineScope)
-    }
 
-    fun setHasPrev(state: Boolean) {
-        mediaButtonPrev.isInvisible = !state
-    }
-
-    fun setHasNext(state: Boolean) {
-        mediaButtonNext.isInvisible = !state
+        playerFlow.playerState.map { it.commands }.distinctUntilChanged().onEach {
+            mediaButtonPrev.isInvisible = !it.seekToPreviousMediaItem
+            mediaButtonNext.isInvisible = !it.seekToNextMediaItem
+        }.launchIn(coroutineScope)
     }
 
 }
