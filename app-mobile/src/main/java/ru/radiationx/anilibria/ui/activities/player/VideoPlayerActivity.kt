@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.security.KeyStoreException
 import android.util.Log
 import android.util.Rational
 import android.view.WindowManager
@@ -19,8 +20,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.cronet.CronetDataSource
-import androidx.media3.datasource.cronet.CronetUtil
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
@@ -37,7 +36,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import org.chromium.net.CronetEngine
 import org.chromium.net.CronetProvider
 import ru.radiationx.anilibria.R
 import ru.radiationx.anilibria.databinding.ActivityVideoplayerBinding
@@ -49,8 +47,55 @@ import ru.radiationx.media.mobile.models.PlaylistItem
 import ru.radiationx.media.mobile.models.TimelineSkip
 import ru.radiationx.quill.inject
 import ru.radiationx.shared.ktx.android.getExtraNotNull
-import java.util.concurrent.Executors
+import java.io.IOException
+import java.security.KeyStore
+import java.security.NoSuchAlgorithmException
+import java.security.cert.CertPathValidatorException
+import java.security.cert.Certificate
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
 
+
+private val Certificate.name: String
+    get() = when (this) {
+        is X509Certificate -> subjectDN.toString()
+        else -> type
+    }
+fun PrintInstalledCertificates() {
+    try {
+        val ks = KeyStore.getInstance("AndroidCAStore")
+        if (ks != null) {
+            ks.load(null, null)
+            val aliases = ks.aliases()
+            while (aliases.hasMoreElements()) {
+                val alias = aliases.nextElement() as String
+                val cert = ks.getCertificate(alias) as X509Certificate
+                //To print System Certs only
+
+               /* if (cert.issuerDN.name.contains("system")) {
+                    println(cert.issuerDN.name)
+                }
+
+                //To print User Certs only
+                if (cert.issuerDN.name.contains("user")) {
+                    println(cert.issuerDN.name)
+                }*/
+
+                //To print all certs
+                //println()
+                Log.d("kekeke","keystore ${cert.issuerDN.name}")
+            }
+        }
+    } catch (e: IOException) {
+        e.printStackTrace()
+    } catch (e: KeyStoreException) {
+        e.printStackTrace()
+    } catch (e: NoSuchAlgorithmException) {
+        e.printStackTrace()
+    } catch (e: CertificateException) {
+        e.printStackTrace()
+    }
+}
 
 private class PlayerHolder {
     private var _player: ExoPlayer? = null
@@ -63,14 +108,27 @@ private class PlayerHolder {
         CronetProvider.getAllProviders(context).forEach {
             Log.e("lololo", "cronet provider $it")
         }
-        val okHttpClient = OkHttpClient.Builder().build()
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                chain.proceed(chain.request()).also {
+                    Log.e("kekeke", "player certs:")
+                    it.handshake?.peerCertificates?.forEach {
+                        Log.e("kekeke", "player cert ${it.name}")
+                    }
+                    Log.e("kekeke", "player certs end")
+                }
+            }
+            .build()
+        okHttpClient.x509TrustManager?.acceptedIssuers?.forEach {
+            Log.e("kekeke", "x509 ${it.issuerDN}")
+        }
         val okHttpDataSourceFactory = OkHttpDataSource.Factory(okHttpClient).apply {
         }
 
         /*val provider = CronetProvider.getAllProviders(context).first() {
             it.name == "App-Packaged-Cronet-Provider"
         }*/
-        val engine = CronetEngine.Builder(context)
+        /*val engine = CronetEngine.Builder(context)
             .enableQuic(false)
             .enableHttp2(true)
             .enableBrotli(false)
@@ -87,7 +145,7 @@ private class PlayerHolder {
         val cronetSourceFactory = engine?.let {
             CronetDataSource.Factory(it, Executors.newFixedThreadPool(4)).apply {
             }
-        }
+        }*/
 
 
         val finalFactory = /*cronetSourceFactory ?:*/ okHttpDataSourceFactory
@@ -155,6 +213,7 @@ class VideoPlayerActivity : BaseActivity(R.layout.activity_videoplayer) {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+        PrintInstalledCertificates()
         WindowCompat.getInsetsController(window, binding.root).apply {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             hide(WindowInsetsCompat.Type.navigationBars())
@@ -175,6 +234,38 @@ class VideoPlayerActivity : BaseActivity(R.layout.activity_videoplayer) {
         player.getPlayer()?.addAnalyticsListener(object : AnalyticsListener {
             val times = mutableListOf<Long>()
             val hostCounter = mutableMapOf<String, Int>()
+
+            fun getCause(e: Throwable?): Throwable? {
+                var cause: Throwable? = null
+                var result = e
+                while (null != result!!.cause.also { cause = it } && result !== cause) {
+                    result = cause
+                }
+                return result
+            }
+
+            @UnstableApi
+            override fun onLoadError(
+                eventTime: AnalyticsListener.EventTime,
+                loadEventInfo: LoadEventInfo,
+                mediaLoadData: MediaLoadData,
+                error: IOException,
+                wasCanceled: Boolean,
+            ) {
+                Log.e("lololo", "onLoadError $wasCanceled, ${loadEventInfo.uri}", error)
+                (getCause(error) as? CertPathValidatorException?)?.also {
+
+                    //Log.e("kekeke", "player error certPath")
+                    //Log.e("kekeke", it.certPath.toString())
+                    Log.e("kekeke", "player error certs:")
+                    it.certPath.certificates?.forEach {
+                        Log.e("kekeke", "player error cert ${it.name}")
+                    }
+                    Log.e("kekeke", "player error certs end")
+                }
+
+                super.onLoadError(eventTime, loadEventInfo, mediaLoadData, error, wasCanceled)
+            }
 
             @UnstableApi
             override fun onLoadCompleted(
